@@ -10,8 +10,12 @@
 // add headers that you want to pre-compile here
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
+#include <tchar.h>
+#include "EasySocket.hpp"
 #include "framework.h"
 #include "common.h"
+#include "network.h"
 #include "getters.h"
 #include "spawners.h"
 #include "movers.h"

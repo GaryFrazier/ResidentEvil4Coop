@@ -2,10 +2,19 @@
 
 uintptr_t modBase;
 
-void Initialize()
+void InitializeInjection()
 {
 	modBase = (uintptr_t)GetModuleHandle(NULL);
-	HookCollisionDisableServer();
+
+	if (isServer)
+	{
+		HookCollisionDisableServer();
+	}
+	else
+	{
+		HookCollisionDisableClient();
+	}
+	
 }
 
 

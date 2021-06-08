@@ -1,4 +1,5 @@
 #pragma once
+
 #include <windows.h>
 #include "Memory.h"
 #include "pch.h"
@@ -9,7 +10,9 @@ _MoveCharacter MoveCharacter;
 
 DWORD WINAPI MainThread(LPVOID param)
 {
-    Initialize();
+    CreateConsole();
+    InitializeNetwork();
+    InitializeInjection();
 
     while (!GetAsyncKeyState(VK_END))
     {

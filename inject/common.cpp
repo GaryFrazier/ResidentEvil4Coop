@@ -5,7 +5,7 @@ uintptr_t modBase;
 void Initialize()
 {
 	modBase = (uintptr_t)GetModuleHandle(NULL);
-	HookCollisionDisable();
+	HookCollisionDisableServer();
 }
 
 
@@ -72,9 +72,46 @@ void __declspec(naked) disableCollisionOnAllButLeon2()
 	}
 }
 
+DWORD partnerCollisionJumpBack;
+DWORD partnerCollisionJumpBack2;
+DWORD partnerPointer;
+void __declspec(naked) disableCollisionOnPartner()
+{
+	__asm {
+		push eax
+		mov eax, [partnerPointer]
+		mov eax, [eax]
+		cmp ebx, eax
+		pop eax
+		je SKIP_COLLISION_PARTNER
+		call collisionPointer
 
-// Skips collision detection on all but leon (should only be used on client so it can easily sync with server, server needs a specific one to only ignore ashley, if enemy's get too broken)
-void HookCollisionDisable()
+		SKIP_COLLISION_PARTNER:
+
+		jmp[partnerCollisionJumpBack]
+	}
+}
+
+void __declspec(naked) disableCollisionOnPartner2()
+{
+	__asm {
+		push eax
+		mov eax, [partnerPointer]
+		mov eax, [eax]
+		cmp ebx, eax
+		pop eax
+		je SKIP_COLLISION_PARTNER2
+		call collisionPointer
+
+		SKIP_COLLISION_PARTNER2:
+
+		jmp[partnerCollisionJumpBack2]
+	}
+}
+
+
+// Skips collision detection on all but leon (should only be used on client so it can easily sync with server)
+void HookCollisionDisableClient()
 {
 	int hookLength = 5;
 	DWORD hookAddress = modBase + 0x195018;
@@ -88,4 +125,21 @@ void HookCollisionDisable()
 	collisionJmpBack2 = hookAddress2 + hookLength;
 
 	Hook((void*)hookAddress2, disableCollisionOnAllButLeon2, hookLength);
+}
+
+// Skips collision detection on partner (for server only)
+void HookCollisionDisableServer()
+{
+	int hookLength = 5;
+	DWORD hookAddress = modBase + 0x195018;
+	partnerPointer = modBase + 0x857060;
+	collisionPointer = modBase + 0x3959;
+	partnerCollisionJumpBack = hookAddress + hookLength;
+
+	Hook((void*)hookAddress, disableCollisionOnPartner, hookLength);
+
+	DWORD hookAddress2 = modBase + 0x195044;
+	partnerCollisionJumpBack2 = hookAddress2 + hookLength;
+
+	Hook((void*)hookAddress2, disableCollisionOnPartner2, hookLength);
 }

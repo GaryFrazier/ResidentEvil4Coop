@@ -10,3 +10,4 @@ struct Vector3
 extern uintptr_t modBase;
 
 void Initialize();
+void HookCollisionDisable();

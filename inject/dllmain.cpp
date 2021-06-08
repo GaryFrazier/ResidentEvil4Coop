@@ -15,13 +15,8 @@ DWORD WINAPI MainThread(LPVOID param)
     {
         if (GetAsyncKeyState(VK_NUMPAD2) & 1)
         {
-            Vector3* currentPos = GetCurrentLocation();
-            MoveCharacter = (_MoveCharacter)(modBase + 0x575E50);
-
-            struct Vector3 offset;
-            offset.x = 200;
-            Vector3* offsetPointer = &offset;
-            MoveCharacter(currentPos, offsetPointer, currentPos);
+            Vector3* leonPos = GetCurrentLocation();
+            MovePartner(leonPos);
         }
     }
     FreeLibraryAndExitThread((HMODULE)param, 0);

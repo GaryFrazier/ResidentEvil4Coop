@@ -8,7 +8,11 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
+#include <stdio.h>
+#include <stdlib.h>
 #include "framework.h"
 #include "common.h"
 #include "getters.h"
+#include "spawners.h"
+#include "movers.h"
 #endif //PCH_H

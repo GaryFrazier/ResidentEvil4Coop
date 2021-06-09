@@ -13,7 +13,6 @@
 #include <iostream>
 #include <tchar.h>
 #include <winsock2.h>
-#include "EasySocket.hpp"
 #include "framework.h"
 #include "common.h"
 #include "network.h"

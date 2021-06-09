@@ -1,4 +1,7 @@
 #pragma once
+#include "Network.h"
+#include "SocketClient.h"
+#include "SocketServer.h"
 
 struct Packet
 {
@@ -8,6 +11,7 @@ struct Packet
 extern bool isServer;
 
 void InitializeNetwork();
-void HandleData(const std::string& data);
+void messageReceived(messageStruct* s);
+void errorOccurred(errorStruct* e);
 void Serialize(Packet* msgPacket, char* data);
 void Deserialize(char* data, Packet* msgPacket);

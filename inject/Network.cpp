@@ -1,44 +1,78 @@
 #include "pch.h"
 #include "Network.h"
-using namespace masesk;
+#include "SocketClient.h"
+#include "SocketServer.h"
+
 bool isServer;
 
+using namespace std;
+bool good = true;
 
 void InitializeNetwork()
 {
-	std::cout << "Welcome to the Resident Evil 4 Multiplayer Mod, by Gary Frazier\nIf Capcom is reading this, please hire me :)\nYou can find the code for the mod here: https://github.com/GaryFrazier\n";
-	std::cout << "\nSETUP\n\n";
-	std::cout << "Are you the host? Please type 'y' for yes, 'n' for no...\n";
+	cout << "Welcome to the Resident Evil 4 Multiplayer Mod, by Gary Frazier\n\nIf Capcom is reading this, please hire me :)\n\nYou can find the code for the mod here: https://github.com/GaryFrazier\n";
+	cout << "\nIMPORTANT: Both players must install hamachi and be on the same network for you to connect, get hamachi here: https://www.vpn.net/\n";
+	cout << "\nSETUP\n\n";
+	cout << "Are you the host? Please type 'y' for yes, 'n' for no...\n";
 	char host;
-	std::cin >> host;
+	cin >> host;
 	
-	EasySocket socketManager;
-
 	if (host == 'y')
 	{
-		std::cout << "\nYou are the host!\n";
+		cout << "\nYou are the host!\n";
+		cout << "\nWaiting on a client to connect to your hamachi IPv4 address...\n";
 		isServer = true;
-		socketManager.socketListen("re4mp", 8080, &HandleData);
+		
+		SocketServer server(5555);
+		SocketClient client(server.accept());
+		client.setErrorCallback(errorOccurred);
+		client.setMessageCallback(messageReceived);
+
+		while (good) 
+		{
+		};
+
+		client.close();
+		server.close();
 	}
 	else
 	{
-		std::cout << "\nYou are the client!\n";
+		cout << "\nYou are the client!\n";
 		isServer = false;
 
-		std::string ip;
-		std::cout << "Please Enter the IP address of the host...\n";
-		std::cin >> ip;
+		string ip;
+		cout << "Please Enter the hamachi IPv4 address of the host...\n";
+		cin >> ip;
+		cout << "\nAttempting connection, if after 10 seconds it is not successful, the connection has failed...\n";
+		
+		SocketClient client("127.0.0.1", 5555);
+		client.setErrorCallback(errorOccurred);
+		client.setMessageCallback(messageReceived);
+		client.connect();
+		client.send("Hello World!");
 
-		socketManager.socketConnect("re4mp", ip, 8080);
-		socketManager.socketSend("test", "Hello from client!");
+		while (good) 
+		{
+
+		};
+
+		client.close();
 	}
 }
 
-void HandleData(const std::string& data)
+void messageReceived(messageStruct* s)
 {
 #ifdef _DEBUG
-	std::cout << "Client sent: " + data << std::endl;
+	cout << "Client sent: " + s->message << endl;
 #endif
+
+	cout << "client: " << s->message << endl;
+}
+
+void errorOccurred(errorStruct* e)
+{
+	cout << e->code << " : " << e->message << endl;
+	good = false;
 }
 
 

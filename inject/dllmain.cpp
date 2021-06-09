@@ -11,8 +11,8 @@ _MoveCharacter MoveCharacter;
 DWORD WINAPI MainThread(LPVOID param)
 {
     CreateConsole();
-    InitializeNetwork();
     InitializeInjection();
+    InitializeNetwork();
 
     while (!GetAsyncKeyState(VK_END))
     {

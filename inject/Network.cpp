@@ -18,7 +18,7 @@ void InitializeNetwork()
 	{
 		std::cout << "\nYou are the host!\n";
 		isServer = true;
-		socketManager.socketListen("re4mp", 8080, &handleData);
+		socketManager.socketListen("re4mp", 8080, &HandleData);
 	}
 	else
 	{
@@ -34,9 +34,20 @@ void InitializeNetwork()
 	}
 }
 
-void handleData(const std::string& data)
+void HandleData(const std::string& data)
 {
 #ifdef _DEBUG
 	std::cout << "Client sent: " + data << std::endl;
 #endif
+}
+
+
+void Serialize(Packet* msgPacket, char *data)
+{
+	memcpy(msgPacket, &data, sizeof(Packet));
+}
+
+void Deserialize(char *data, Packet* msgPacket)
+{
+	memcpy(&data, msgPacket, sizeof(Packet));
 }

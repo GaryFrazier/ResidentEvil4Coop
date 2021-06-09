@@ -1,8 +1,17 @@
 #include <windows.h>
 #include <tlhelp32.h>
+#include <filesystem>
+#include <iostream>
+#include <stdio.h>
 
-// The full path to the DLL to be injected.
-const char* dll_path = "D:\\projects\\cpp\\re4mp\\Debug\\inject.dll";
+#ifdef _DEBUG
+const char* fullFilename = "D:\\projects\\cpp\\re4mp\\Debug\\inject.dll";
+#else
+char filename[] = "inject.dll";
+char fullFilename[MAX_PATH];
+
+DWORD test = GetFullPathNameA(filename, MAX_PATH, fullFilename, nullptr);
+#endif
 
 int main(int argc, char** argv)
 {
@@ -27,10 +36,10 @@ int main(int argc, char** argv)
 			HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, true, pe32.th32ProcessID);
 
 			// So we don't corrupt any memory, allocate additional memory to hold our DLL path
-			void* lpBaseAddress = VirtualAllocEx(process, NULL, strlen(dll_path) + 1, MEM_COMMIT, PAGE_READWRITE);
+			void* lpBaseAddress = VirtualAllocEx(process, NULL, strlen(fullFilename) + 1, MEM_COMMIT, PAGE_READWRITE);
 
 			// Write our DLL path into the memory we just allocated inside the game
-			WriteProcessMemory(process, lpBaseAddress, dll_path, strlen(dll_path) + 1, NULL);
+			WriteProcessMemory(process, lpBaseAddress, fullFilename, strlen(fullFilename) + 1, NULL);
 
 			// Create a remote thread inside the game that will execute LoadLibraryA
 			// To this LoadLibraryA call, we will pass the full path of our DLL that we wrote into the game
@@ -45,6 +54,7 @@ int main(int argc, char** argv)
 			VirtualFreeEx(process, lpBaseAddress, 0, MEM_RELEASE);
 			CloseHandle(thread);
 			CloseHandle(process);
+
 			break;
 		}
 	} while (Process32Next(snapshot, &pe32));

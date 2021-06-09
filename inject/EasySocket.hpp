@@ -21,6 +21,7 @@ const int SOCKET_ERROR = -1;
 #include <functional>
 #include <exception>
 
+#pragma comment(lib, "ws2_32.lib")
 
 namespace masesk {
 	const int BUFF_SIZE = 4096;

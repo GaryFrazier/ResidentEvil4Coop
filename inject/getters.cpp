@@ -13,8 +13,8 @@ int* GetPartnerObjectPointer()
 
 Vector3* GetCurrentLocation()
 {
-    int* vectorPointer = GetPlayerPointer();
-    Vector3* result = (Vector3*)(*(vectorPointer) + 0x94);
+    int* playerPointer = GetPlayerPointer();
+    Vector3* result = (Vector3*)(*(playerPointer) + 0x94);
 
     if ((int)result > (int)modBase)
     {
@@ -25,10 +25,24 @@ Vector3* GetCurrentLocation()
     return &zero;
 }
 
+float* GetCurrentRotation()
+{
+    int* playerPointer = GetPlayerPointer();
+    float* result = (float*)(*(playerPointer)+0xA4);
+
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    float* zero = 0;
+    return zero;
+}
+
 Vector3* GetPartnerLocation()
 {
-    int* vectorPointer = GetPartnerObjectPointer();
-    Vector3* result = (Vector3*)(*(vectorPointer)+0x94);
+    int* partnerPointer = GetPartnerObjectPointer();
+    Vector3* result = (Vector3*)(*(partnerPointer)+0x94);
 
     if ((int)result > (int)modBase)
     {
@@ -37,4 +51,18 @@ Vector3* GetPartnerLocation()
 
     struct Vector3 zero;
     return &zero;
+}
+
+float* GetPartnerRotation()
+{
+    int* partnerPointer = GetPartnerObjectPointer();
+    float* result = (float*)(*(partnerPointer)+0xA4);
+
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    float* zero = 0;
+    return zero;
 }

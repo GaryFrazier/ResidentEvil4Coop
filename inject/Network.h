@@ -5,6 +5,7 @@
 struct Packet
 {
 	Vector3 senderLocation;
+	float senderRotation;
 } packet;
 
 extern bool isServer;

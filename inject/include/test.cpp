@@ -25,10 +25,19 @@ void TestLoop()
 
 			struct Packet packetData;
 			Vector3* loc = GetCurrentLocation();
+			float* rot = GetCurrentRotation();
 
-			cout << loc;
 			packetData.senderLocation = *loc;
 
+			if (rot == 0)
+			{
+				packetData.senderRotation = 0;
+			}
+			else
+			{
+				packetData.senderRotation = *rot;
+			}
+			
 			if (newTestPacket == nullptr)
 			{
 				previousTestPacket = &packetData;
@@ -40,9 +49,8 @@ void TestLoop()
 
 			newTestPacket = &packetData;
 
-			cout << "Partner new location: " << previousTestPacket->senderLocation.x << " " << previousTestPacket->senderLocation.z << "\n";
 			MovePartner(&(previousTestPacket->senderLocation));
-
+			RotatePartner(previousTestPacket->senderRotation);
 
 			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}
@@ -65,6 +73,9 @@ void Interpolate(std::clock_t* start, double* duration)
 			interpolatedLocation.z = previousTestPacket->senderLocation.z + (newTestPacket->senderLocation.z - previousTestPacket->senderLocation.z + 1000);
 
 			MovePartner(&(interpolatedLocation));
+
+			RotatePartner(previousTestPacket->senderRotation + (newTestPacket->senderRotation - previousTestPacket->senderRotation));
+
 			cout << "interpolating complete\n";
 		}
 

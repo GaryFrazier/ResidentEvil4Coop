@@ -22,3 +22,14 @@ void MovePartner(Vector3* destination)
 		MovePartnerFunc(zeroPointer, destination, actorLocation);
 	}
 }
+
+void RotatePartner(float newRot)
+{
+	float* actorRot = GetPartnerRotation();
+
+	//check ALL pointers to make sure no bad memory is accessed
+	if ((int)actorRot > (int)modBase)
+	{
+		*actorRot = newRot;
+	}
+}

@@ -198,11 +198,21 @@ void MainSocketLoop(TCPSocket* sock)
 void PopulateClientPacket(Packet* packet)
 {
 	packet->senderLocation = *GetCurrentLocation();
+	float* rot = GetCurrentRotation();
+	if (rot == 0)
+	{
+		packet->senderRotation = 0;
+	}
+	else
+	{
+		packet->senderRotation = *rot;
+	}
 }
 
 void ProcessServerPacketOnClient()
 {
 	MovePartner(&(previousPacket->senderLocation));
+	RotatePartner(previousPacket->senderRotation);
 }
 
 void InterpolateClient(std::clock_t* start, double* duration)
@@ -223,11 +233,21 @@ void InterpolateClient(std::clock_t* start, double* duration)
 void PopulateServerPacket(Packet* packet)
 {
 	packet->senderLocation = *GetCurrentLocation();
+	float* rot = GetCurrentRotation();
+	if (rot == 0)
+	{
+		packet->senderRotation = 0;
+	}
+	else
+	{
+		packet->senderRotation = *rot;
+	}
 }
 
 void ProcessClientPacketOnServer()
 {
 	MovePartner(&(previousPacket->senderLocation));
+	RotatePartner(previousPacket->senderRotation);
 }
 
 void InterpolateServer(std::clock_t* start, double* duration)
@@ -252,6 +272,7 @@ void InterpolatePartner()
 	interpolatedLocation.y = previousPacket->senderLocation.y + (newPacket->senderLocation.y - previousPacket->senderLocation.y);
 	interpolatedLocation.z = previousPacket->senderLocation.z + (newPacket->senderLocation.z - previousPacket->senderLocation.z);
 	MovePartner(&(interpolatedLocation));
+	RotatePartner(previousPacket->senderRotation + (newPacket->senderRotation - previousPacket->senderRotation));
 }
 
 #pragma endregion

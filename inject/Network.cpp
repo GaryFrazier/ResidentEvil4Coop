@@ -1,19 +1,13 @@
 #include "pch.h"
-#include <ctime>
-#include <iostream>           // For cerr and cout
-#include <cstdlib>            // For atoi()
 #include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
-#include "Network.h"
 
 using namespace std;
+
+#pragma region init
 
 bool isServer;
 bool good = true;
 const unsigned int RCVBUFSIZE = 2048;    // Size of receive buffer
-
-// timer for packet sends
-std::clock_t start;
-double duration = 0;
 
 // initialize structs for transfer
 char* outgoingData = new char[sizeof(Packet)];
@@ -26,6 +20,9 @@ Packet* currentIncomingPacket = &dummyIncomingPacket;
 
 char buffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
 int bytesReceived = 0;              // Bytes read on each recv()
+
+Packet* previousPacket = nullptr;
+Packet* newPacket = nullptr;
 
 void InitializeNetwork()
 {
@@ -42,6 +39,7 @@ void InitializeNetwork()
 		cout << "\nYou are the host!\n";
 		cout << "\nWaiting on a client to connect to your hamachi IPv4 address...\n";
 		isServer = true;
+		InitializeInjection();
 
 		try
 		{
@@ -57,7 +55,6 @@ void InitializeNetwork()
 			cerr << e.what() << endl;
 			exit(1);
 		}
-		// NOT REACHED
 
 		while (good) 
 		{
@@ -68,6 +65,7 @@ void InitializeNetwork()
 	{
 		cout << "\nYou are the client!\n";
 		isServer = false;
+		InitializeInjection();
 
 		string ip;
 		cout << "Please Enter the hamachi IPv4 address of the host...\n";
@@ -79,37 +77,7 @@ void InitializeNetwork()
 		{
 			// Establish connection with the echo server
 			TCPSocket sock(ip, 5555);
-
-			while (true)
-			{
-				if (duration < .200)
-				{
-					Sleep(200 - (duration * 1000));
-				}
-
-				start = std::clock();
-
-				struct Packet currentOutgoingPacketData;
-				currentOutgoingPacketData.senderLocation = *GetCurrentLocation();
-				currentOutgoingPacket = &currentOutgoingPacketData;
-
-				Serialize(currentOutgoingPacket, outgoingData);
-				sock.send(outgoingData, strlen(outgoingData));
-
-				// Receive up to the buffer size bytes from the sender
-				if ((bytesReceived = (sock.recv(buffer, RCVBUFSIZE))) <= 0)
-				{
-					cerr << "Unable to read";
-					exit(1);
-				}
-
-				Deserialize(incomingData, currentIncomingPacket);
-				cout << "packet received:\n";
-				cout << "Partner new location: " << currentIncomingPacket->senderLocation.x << " " << currentIncomingPacket->senderLocation.z << "\n";
-
-				duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-			}
-
+			MainSocketLoop(&sock);
 		}
 		catch (SocketException& e)
 		{
@@ -120,8 +88,6 @@ void InitializeNetwork()
 	}
 }
 
-
-//server loop
 void HandleTCPClient(TCPSocket* sock)
 {
 	cout << "Handling client ";
@@ -143,42 +109,155 @@ void HandleTCPClient(TCPSocket* sock)
 	}
 	cout << endl;
 
-	// Send received string and receive again until the end of transmission
-	char echoBuffer[RCVBUFSIZE];
-	int recvMsgSize;
-	// Zero means end of transmission
+	MainSocketLoop(sock);
+}
+
+#pragma endregion
+
+#pragma region "loop"
+
+void MainSocketLoop(TCPSocket* sock)
+{
+	double duration = 0;
+	double* durationPtr = &duration;
+	std::clock_t start;
+
 	while (true)
 	{
 		if (duration < .200)
 		{
-			Sleep(200 - (duration * 1000));
+			if (isServer)
+			{
+				InterpolateServer(&start, durationPtr);
+			}
+			else
+			{
+				InterpolateClient(&start, durationPtr);
+			}
 		}
-
-		start = std::clock();
-
-		struct Packet currentOutgoingPacketData;
-		currentOutgoingPacketData.senderLocation = *GetCurrentLocation();
-		currentOutgoingPacket = &currentOutgoingPacketData;
-
-		Serialize(currentOutgoingPacket, outgoingData);
-		sock->send(outgoingData, strlen(outgoingData));
-
-		// Receive up to the buffer size bytes from the sender
-		if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
+		else
 		{
-			cerr << "Unable to read";
-			exit(1);
+			start = std::clock();
+
+			// create packet to send
+			struct Packet currentOutgoingPacketData;
+			currentOutgoingPacket = &currentOutgoingPacketData;
+
+			if (isServer)
+			{
+				PopulateServerPacket(currentOutgoingPacket);
+			}
+			else
+			{
+				PopulateClientPacket(currentOutgoingPacket);
+			}
+
+			Serialize(currentOutgoingPacket, outgoingData);
+
+			// send packet
+			sock->send(outgoingData, strlen(outgoingData));
+
+			// Receive up to the buffer size bytes from the sender
+			if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
+			{
+				cerr << "Unable to read";
+				exit(1);
+			}
+
+			Deserialize(incomingData, currentIncomingPacket);
+			cout << "packet received:\n";
+
+			// process new packet
+			if (newPacket == nullptr)
+			{
+				previousPacket = currentIncomingPacket;
+			}
+			else
+			{
+				previousPacket = newPacket;
+			}
+
+			newPacket = currentIncomingPacket;
+
+			if (isServer)
+			{
+				ProcessClientPacketOnServer();
+			}
+			else
+			{
+				ProcessServerPacketOnClient();
+			}
+
+			// adjust time for next packet send
+			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}
-
-		Deserialize(incomingData, currentIncomingPacket);
-		cout << "packet received:\n";
-		cout << "Partner new location: " << currentIncomingPacket->senderLocation.x << " " << currentIncomingPacket->senderLocation.z << "\n";
-
-		duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 	}
-	delete sock;
 }
 
+// client 
+void PopulateClientPacket(Packet* packet)
+{
+	packet->senderLocation = *GetCurrentLocation();
+}
+
+void ProcessServerPacketOnClient()
+{
+	MovePartner(&(previousPacket->senderLocation));
+}
+
+void InterpolateClient(std::clock_t* start, double* duration)
+{
+	while (*duration < 0.200)
+	{
+		if (newPacket != nullptr && previousPacket != nullptr)
+		{
+			InterpolatePartner();
+		}
+
+		Sleep(15);
+		*duration = (std::clock() - *start);
+	}
+}
+
+// server 
+void PopulateServerPacket(Packet* packet)
+{
+	packet->senderLocation = *GetCurrentLocation();
+}
+
+void ProcessClientPacketOnServer()
+{
+	MovePartner(&(previousPacket->senderLocation));
+}
+
+void InterpolateServer(std::clock_t* start, double* duration)
+{
+	while (*duration < 0.200)
+	{
+		if (newPacket != nullptr && previousPacket != nullptr)
+		{
+			InterpolatePartner();
+		}
+
+		Sleep(15);
+		*duration = (std::clock() - *start);
+	}
+}
+
+// shared
+void InterpolatePartner()
+{
+	struct Vector3 interpolatedLocation;
+	interpolatedLocation.x = previousPacket->senderLocation.x + (newPacket->senderLocation.x - previousPacket->senderLocation.x);
+	interpolatedLocation.y = previousPacket->senderLocation.y + (newPacket->senderLocation.y - previousPacket->senderLocation.y);
+	interpolatedLocation.z = previousPacket->senderLocation.z + (newPacket->senderLocation.z - previousPacket->senderLocation.z);
+	MovePartner(&(interpolatedLocation));
+}
+
+#pragma endregion
+
+#pragma region "util"
+// serialization
 void Serialize(Packet* msgPacket, char *data)
 {
 	memcpy(msgPacket, &data, sizeof(Packet));
@@ -188,3 +267,5 @@ void Deserialize(char *data, Packet* msgPacket)
 {
 	memcpy(&data, msgPacket, sizeof(Packet));
 }
+
+#pragma endregion

@@ -15,6 +15,10 @@ void MovePartner(Vector3* destination)
 	Vector3* zeroPointer = &zero;
 
 	Vector3* actorLocation = GetPartnerLocation();
-
-	MovePartnerFunc(zeroPointer, destination, actorLocation);
+	
+	//check ALL pointers to make sure no bad memory is accessed
+	if ((int)actorLocation > (int)modBase && (int)destination > (int)modBase)
+	{
+		MovePartnerFunc(zeroPointer, destination, actorLocation);
+	}
 }

@@ -167,6 +167,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="getters.h" />
     <ClInclude Include="include\PracticalSocket.h" />
+    <ClInclude Include="include\test.h" />
     <ClInclude Include="movers.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="pch.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="framework.cpp" />
     <ClCompile Include="getters.cpp" />
     <ClCompile Include="include\PracticalSocket.cpp" />
+    <ClCompile Include="include\test.cpp" />
     <ClCompile Include="movers.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp">

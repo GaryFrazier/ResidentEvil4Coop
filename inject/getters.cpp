@@ -16,7 +16,13 @@ Vector3* GetCurrentLocation()
     int* vectorPointer = GetPlayerPointer();
     Vector3* result = (Vector3*)(*(vectorPointer) + 0x94);
 
-    return result;
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    struct Vector3 zero;
+    return &zero;
 }
 
 Vector3* GetPartnerLocation()
@@ -24,5 +30,11 @@ Vector3* GetPartnerLocation()
     int* vectorPointer = GetPartnerObjectPointer();
     Vector3* result = (Vector3*)(*(vectorPointer)+0x94);
 
-    return result;
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    struct Vector3 zero;
+    return &zero;
 }

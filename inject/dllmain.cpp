@@ -11,8 +11,10 @@ _MoveCharacter MoveCharacter;
 DWORD WINAPI MainThread(LPVOID param)
 {
     CreateConsole();
-    InitializeInjection();
-    InitializeNetwork();
+
+    // comment out the first line, and uncomment the second line to test stuff locally without the network
+    //InitializeNetwork();
+    InitializeInjection();TestLoop();
 
     while (!GetAsyncKeyState(VK_END))
     {

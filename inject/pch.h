@@ -13,10 +13,14 @@
 #include <iostream>
 #include <tchar.h>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include "framework.h"
 #include "common.h"
 #include "network.h"
 #include "getters.h"
 #include "spawners.h"
 #include "movers.h"
+#include <thread>
+#include <chrono>
+
 #endif //PCH_H

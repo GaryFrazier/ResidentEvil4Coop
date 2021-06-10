@@ -1,7 +1,6 @@
 #pragma once
 #include "Network.h"
-#include "SocketClient.h"
-#include "SocketServer.h"
+#include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
 
 struct Packet
 {
@@ -11,7 +10,6 @@ struct Packet
 extern bool isServer;
 
 void InitializeNetwork();
-void messageReceived(messageStruct* s);
-void errorOccurred(errorStruct* e);
 void Serialize(Packet* msgPacket, char* data);
 void Deserialize(char* data, Packet* msgPacket);
+void HandleTCPClient(TCPSocket* sock);

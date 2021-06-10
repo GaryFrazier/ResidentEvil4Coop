@@ -33,13 +33,10 @@
     <ClInclude Include="movers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Network.h">
+    <ClInclude Include="network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\SocketClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\SocketServer.h">
+    <ClInclude Include="include\PracticalSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,13 +62,10 @@
     <ClCompile Include="framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Network.cpp">
+    <ClCompile Include="network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\SocketClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\SocketServer.cpp">
+    <ClCompile Include="include\PracticalSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

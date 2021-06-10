@@ -1,14 +1,31 @@
 #include "pch.h"
-#include "Network.h"
-#include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
+#include <ctime>
 #include <iostream>           // For cerr and cout
 #include <cstdlib>            // For atoi()
+#include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
+#include "Network.h"
 
 using namespace std;
 
 bool isServer;
 bool good = true;
 const unsigned int RCVBUFSIZE = 2048;    // Size of receive buffer
+
+// timer for packet sends
+std::clock_t start;
+double duration = 0;
+
+// initialize structs for transfer
+char* outgoingData = new char[sizeof(Packet)];
+struct Packet dummyOutgoingPacket;
+Packet* currentOutgoingPacket = &dummyOutgoingPacket;
+
+char* incomingData = new char[sizeof(Packet)];
+struct Packet dummyIncomingPacket;
+Packet* currentIncomingPacket = &dummyIncomingPacket;
+
+char buffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
+int bytesReceived = 0;              // Bytes read on each recv()
 
 void InitializeNetwork()
 {
@@ -19,6 +36,7 @@ void InitializeNetwork()
 	char host;
 	cin >> host;
 	
+	// determine if host and start connecting
 	if (host == 'y')
 	{
 		cout << "\nYou are the host!\n";
@@ -45,7 +63,6 @@ void InitializeNetwork()
 		{
 		};
 
-
 	}
 	else
 	{
@@ -63,30 +80,35 @@ void InitializeNetwork()
 			// Establish connection with the echo server
 			TCPSocket sock(ip, 5555);
 
-			char test[] = "Hello";
-			// Send the string to the echo server
-			sock.send(test, strlen(test));
-
-			char echoBuffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
-			int bytesReceived = 0;              // Bytes read on each recv()
-			int totalBytesReceived = 0;         // Total bytes read
-			// Receive the same string back from the server
-			cout << "Received: ";               // Setup to print the echoed string
-			while (totalBytesReceived < strlen(test))
+			while (true)
 			{
+				if (duration < .200)
+				{
+					Sleep(200 - (duration * 1000));
+				}
+
+				start = std::clock();
+
+				struct Packet currentOutgoingPacketData;
+				currentOutgoingPacketData.senderLocation = *GetCurrentLocation();
+				currentOutgoingPacket = &currentOutgoingPacketData;
+
+				Serialize(currentOutgoingPacket, outgoingData);
+				sock.send(outgoingData, strlen(outgoingData));
+
 				// Receive up to the buffer size bytes from the sender
-				if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) <= 0)
+				if ((bytesReceived = (sock.recv(buffer, RCVBUFSIZE))) <= 0)
 				{
 					cerr << "Unable to read";
 					exit(1);
 				}
-				totalBytesReceived += bytesReceived;     // Keep tally of total bytes
-				echoBuffer[bytesReceived] = '\0';        // Terminate the string!
-				cout << echoBuffer;                      // Print the echo buffer
-			}
-			cout << endl;
 
-			// Destructor closes the socket
+				Deserialize(incomingData, currentIncomingPacket);
+				cout << "packet received:\n";
+				cout << "Partner new location: " << currentIncomingPacket->senderLocation.x << " " << currentIncomingPacket->senderLocation.z << "\n";
+
+				duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+			}
 
 		}
 		catch (SocketException& e)
@@ -98,6 +120,8 @@ void InitializeNetwork()
 	}
 }
 
+
+//server loop
 void HandleTCPClient(TCPSocket* sock)
 {
 	cout << "Handling client ";
@@ -122,11 +146,35 @@ void HandleTCPClient(TCPSocket* sock)
 	// Send received string and receive again until the end of transmission
 	char echoBuffer[RCVBUFSIZE];
 	int recvMsgSize;
-	while ((recvMsgSize = sock->recv(echoBuffer, RCVBUFSIZE)) > 0)
-	{ // Zero means
-// end of transmission
-// Echo message back to client
-		sock->send(echoBuffer, recvMsgSize);
+	// Zero means end of transmission
+	while (true)
+	{
+		if (duration < .200)
+		{
+			Sleep(200 - (duration * 1000));
+		}
+
+		start = std::clock();
+
+		struct Packet currentOutgoingPacketData;
+		currentOutgoingPacketData.senderLocation = *GetCurrentLocation();
+		currentOutgoingPacket = &currentOutgoingPacketData;
+
+		Serialize(currentOutgoingPacket, outgoingData);
+		sock->send(outgoingData, strlen(outgoingData));
+
+		// Receive up to the buffer size bytes from the sender
+		if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
+		{
+			cerr << "Unable to read";
+			exit(1);
+		}
+
+		Deserialize(incomingData, currentIncomingPacket);
+		cout << "packet received:\n";
+		cout << "Partner new location: " << currentIncomingPacket->senderLocation.x << " " << currentIncomingPacket->senderLocation.z << "\n";
+
+		duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 	}
 	delete sock;
 }

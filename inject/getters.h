@@ -9,3 +9,5 @@ Vector3* GetCurrentLocation();
 Vector3* GetPartnerLocation();
 float* GetCurrentRotation();
 float* GetPartnerRotation();
+
+short GetCurrentAreaId();

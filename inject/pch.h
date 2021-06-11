@@ -18,13 +18,17 @@
 #include <cstdlib>            // For atoi()
 #include <thread>
 #include <chrono>
+
+#include "json.hpp"
+
 #include "framework.h"
 #include "common.h"
+#include "serialization.h"
 #include "network.h"
 #include "getters.h"
 #include "spawners.h"
 #include "movers.h"
 #include "test.h"
-#include "json.hpp"
+
 
 #endif //PCH_H

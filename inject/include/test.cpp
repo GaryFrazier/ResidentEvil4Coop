@@ -41,7 +41,8 @@ void TestLoop()
 			string serialized = Serialize(&packetData);
 			cout << serialized << "\n";
 
-			char* p = const_cast<char*>(serialized.c_str());
+			char* p = new char[2048];
+			strcpy(p, const_cast<char*>(serialized.c_str()));
 			Packet* newPack = Deserialize(p);
 			
 			cout << newPack->senderLocation.x << "\n";

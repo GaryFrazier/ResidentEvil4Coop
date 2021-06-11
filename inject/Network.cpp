@@ -2,7 +2,6 @@
 #include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
 
 using namespace std;
-using namespace nlohmann;
 
 #pragma region init
 
@@ -17,15 +16,15 @@ Packet* currentOutgoingPacket = &dummyOutgoingPacket;
 struct Packet dummyIncomingPacket;
 Packet* currentIncomingPacket = &dummyIncomingPacket;
 
-char buffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
-int bytesReceived = 0;              // Bytes read on each recv()
+char buffer[RCVBUFSIZE + 1];
+int bytesReceived = 0;   // Bytes read on each recv()
 
 Packet* previousPacket = nullptr;
 Packet* newPacket = nullptr;
 
 void InitializeNetwork()
 {
-	cout << "Welcome to the Resident Evil 4 Multiplayer Mod, by Gary Frazier\n\nIf Capcom is reading this, please hire me :)\n\nYou can find the code for the mod here: https://github.com/GaryFrazier\n";
+	cout << "Welcome to the Resident Evil 4 Multiplayer Mod, by Gary Frazier\n\nIf Capcom is reading this, please hire me :)\n\nYou can find the code for the mod here: https://github.com/GaryFrazier/ResidentEvil4Coop\n";
 	cout << "\nIMPORTANT: Both players must install hamachi and be on the same network for you to connect, get hamachi here: https://www.vpn.net/\n";
 	cout << "\nSETUP\n\n";
 	cout << "Are you the host? Please type 'y' for yes, 'n' for no...\n";
@@ -183,13 +182,16 @@ void MainSocketLoop(TCPSocket* sock)
 
 			newPacket = currentIncomingPacket;
 
-			if (isServer)
+			if (ShouldSync(previousPacket))
 			{
-				ProcessClientPacketOnServer();
-			}
-			else
-			{
-				ProcessServerPacketOnClient();
+				if (isServer)
+				{
+					ProcessClientPacketOnServer();
+				}
+				else
+				{
+					ProcessServerPacketOnClient();
+				}
 			}
 
 			// adjust time for next packet send
@@ -199,19 +201,6 @@ void MainSocketLoop(TCPSocket* sock)
 }
 
 // client 
-void PopulateClientPacket(Packet* packet)
-{
-	packet->senderLocation = *GetCurrentLocation();
-	float* rot = GetCurrentRotation();
-	if (rot == 0)
-	{
-		packet->senderRotation = 0;
-	}
-	else
-	{
-		packet->senderRotation = *rot;
-	}
-}
 
 void ProcessServerPacketOnClient()
 {
@@ -236,19 +225,6 @@ void InterpolateClient(std::clock_t* start, double* duration)
 }
 
 // server 
-void PopulateServerPacket(Packet* packet)
-{
-	packet->senderLocation = *GetCurrentLocation();
-	float* rot = GetCurrentRotation();
-	if (rot == 0)
-	{
-		packet->senderRotation = 0;
-	}
-	else
-	{
-		packet->senderRotation = *rot;
-	}
-}
 
 void ProcessClientPacketOnServer()
 {
@@ -263,7 +239,7 @@ void InterpolateServer(std::clock_t* start, double* duration)
 {
 	while (*duration < 0.200)
 	{
-		if (newPacket != nullptr && previousPacket != nullptr)
+		if (newPacket != nullptr && previousPacket != nullptr && ShouldSync(newPacket))
 		{
 			InterpolatePartner();
 		}
@@ -283,32 +259,9 @@ void InterpolatePartner()
 	RotatePartner(previousPacket->senderRotation + (newPacket->senderRotation - previousPacket->senderRotation));
 }
 
-#pragma endregion
-
-#pragma region "util"
-// serialization
-string Serialize(Packet* msgPacket)
+bool ShouldSync(Packet* packet)
 {
-	json j;
-	j["senderLocation"] = { { "x", msgPacket->senderLocation.x }, { "y", msgPacket->senderLocation.y }, { "z", msgPacket->senderLocation.z } };
-	j["senderRotation"] = msgPacket->senderRotation;
-	return j.dump();
-}
-
-Packet* Deserialize(char* data)
-{
-	json j = json::parse(data);
-	struct Packet packet;
-	struct Vector3 senderLocation;
-	senderLocation.x = j["senderLocation"]["x"];
-	senderLocation.y = j["senderLocation"]["x"];
-	senderLocation.z = j["senderLocation"]["x"];
-
-	packet.senderLocation = senderLocation;
-	packet.senderRotation = j["senderRotation"];
-
-	Packet* ptr = &packet;
-	return ptr;
+	return packet->senderAreaId == GetCurrentAreaId();
 }
 
 #pragma endregion

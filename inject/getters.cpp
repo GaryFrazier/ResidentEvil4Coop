@@ -66,3 +66,8 @@ float* GetPartnerRotation()
     float* zero = 0;
     return zero;
 }
+
+short GetCurrentAreaId()
+{
+    return *(short*)(modBase + 0x85F70C);
+}

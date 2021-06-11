@@ -168,6 +168,7 @@
     <ClInclude Include="getters.h" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\PracticalSocket.h" />
+    <ClInclude Include="include\serialization.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="movers.h" />
     <ClInclude Include="network.h" />
@@ -180,6 +181,7 @@
     <ClCompile Include="framework.cpp" />
     <ClCompile Include="getters.cpp" />
     <ClCompile Include="include\PracticalSocket.cpp" />
+    <ClCompile Include="include\serialization.cpp" />
     <ClCompile Include="include\test.cpp" />
     <ClCompile Include="movers.cpp" />
     <ClCompile Include="network.cpp" />

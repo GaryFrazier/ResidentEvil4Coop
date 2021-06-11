@@ -68,8 +68,7 @@ void InitializeNetwork()
 		string ip;
 		cout << "Please Enter the hamachi IPv4 address of the host...\n";
 		cin >> ip;
-		cout << "\nAttempting connection, if after 10 seconds it is not successful, the connection has failed...\n";
-		cout << ip;
+		cout << "\nAttempting connection...\n";
 
 		try
 		{
@@ -125,7 +124,7 @@ void MainSocketLoop(TCPSocket* sock)
 		if (duration < .200 && duration != -1)
 		{
 			cout << "\ninterpolate loop 1: ";
-			cout << duration;
+			cout << duration << "\n";
 			if (isServer)
 			{
 				InterpolateServer(&start, durationPtr);

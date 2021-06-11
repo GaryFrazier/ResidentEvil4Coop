@@ -37,7 +37,15 @@ void TestLoop()
 			{
 				packetData.senderRotation = *rot;
 			}
+
+			string serialized = Serialize(&packetData);
+			cout << serialized << "\n";
+
+			char* p = const_cast<char*>(serialized.c_str());
+			Packet* newPack = Deserialize(p);
 			
+			cout << newPack->senderLocation.x << "\n";
+
 			if (newTestPacket == nullptr)
 			{
 				previousTestPacket = &packetData;
@@ -62,10 +70,8 @@ void Interpolate(std::clock_t* start, double* duration)
 {
 	while (*duration < 0.200)
 	{
-		cout << "interpolating\n";
 		if (newTestPacket != nullptr && previousTestPacket != nullptr)
 		{
-			cout << "interpolating packet\n";
 			struct Vector3 interpolatedLocation;
 
 			interpolatedLocation.x = previousTestPacket->senderLocation.x + (newTestPacket->senderLocation.x - previousTestPacket->senderLocation.x + 1000);
@@ -75,8 +81,6 @@ void Interpolate(std::clock_t* start, double* duration)
 			MovePartner(&(interpolatedLocation));
 
 			RotatePartner(previousTestPacket->senderRotation + (newTestPacket->senderRotation - previousTestPacket->senderRotation));
-
-			cout << "interpolating complete\n";
 		}
 
 		Sleep(15);

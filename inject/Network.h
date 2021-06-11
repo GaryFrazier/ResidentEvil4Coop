@@ -11,8 +11,8 @@ struct Packet
 extern bool isServer;
 
 void InitializeNetwork();
-void Serialize(Packet* msgPacket, char* data);
-void Deserialize(char* data, Packet* msgPacket);
+string Serialize(Packet* msgPacket);
+Packet* Deserialize(char* data);
 void HandleTCPClient(TCPSocket* sock);
 
 // loop

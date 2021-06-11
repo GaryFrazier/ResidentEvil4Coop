@@ -2,6 +2,7 @@
 #include "PracticalSocket.h"  // For Socket, ServerSocket, and SocketException
 
 using namespace std;
+using namespace nlohmann;
 
 #pragma region init
 
@@ -9,12 +10,10 @@ bool isServer;
 bool good = true;
 const unsigned int RCVBUFSIZE = 2048;    // Size of receive buffer
 
-// initialize structs for transfer
-char* outgoingData = new char[sizeof(Packet)];
+char* incomingData = new char[RCVBUFSIZE];
 struct Packet dummyOutgoingPacket;
 Packet* currentOutgoingPacket = &dummyOutgoingPacket;
 
-char* incomingData = new char[sizeof(Packet)];
 struct Packet dummyIncomingPacket;
 Packet* currentIncomingPacket = &dummyIncomingPacket;
 
@@ -118,14 +117,16 @@ void HandleTCPClient(TCPSocket* sock)
 
 void MainSocketLoop(TCPSocket* sock)
 {
-	double duration = 0;
+	double duration = -1;
 	double* durationPtr = &duration;
 	std::clock_t start;
 
 	while (true)
 	{
-		if (duration < .200)
+		if (duration < .200 && duration != -1)
 		{
+			cout << "\ninterpolate loop 1: ";
+			cout << duration;
 			if (isServer)
 			{
 				InterpolateServer(&start, durationPtr);
@@ -152,10 +153,11 @@ void MainSocketLoop(TCPSocket* sock)
 				PopulateClientPacket(currentOutgoingPacket);
 			}
 
-			Serialize(currentOutgoingPacket, outgoingData);
+			string outgoingData = Serialize(currentOutgoingPacket);
+			const char* c_outgoingData = outgoingData.c_str();
 
 			// send packet
-			sock->send(outgoingData, strlen(outgoingData));
+			sock->send(c_outgoingData, strlen(c_outgoingData));
 
 			// Receive up to the buffer size bytes from the sender
 			if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
@@ -164,16 +166,18 @@ void MainSocketLoop(TCPSocket* sock)
 				exit(1);
 			}
 
-			Deserialize(incomingData, currentIncomingPacket);
+			currentIncomingPacket = Deserialize(incomingData);
 			cout << "packet received:\n";
 
 			// process new packet
 			if (newPacket == nullptr)
 			{
+				cout << "new packet null, setting packet:\n";
 				previousPacket = currentIncomingPacket;
 			}
 			else
 			{
+				cout << "setting previous packet:\n";
 				previousPacket = newPacket;
 			}
 
@@ -211,7 +215,9 @@ void PopulateClientPacket(Packet* packet)
 
 void ProcessServerPacketOnClient()
 {
+	cout << "moving partner\n";
 	MovePartner(&(previousPacket->senderLocation));
+	cout << "rotating partner\n";
 	RotatePartner(previousPacket->senderRotation);
 }
 
@@ -246,7 +252,10 @@ void PopulateServerPacket(Packet* packet)
 
 void ProcessClientPacketOnServer()
 {
+	cout << previousPacket->senderRotation;
+	cout << "moving partner\n";
 	MovePartner(&(previousPacket->senderLocation));
+	cout << "rotating partner\n";
 	RotatePartner(previousPacket->senderRotation);
 }
 
@@ -258,7 +267,6 @@ void InterpolateServer(std::clock_t* start, double* duration)
 		{
 			InterpolatePartner();
 		}
-
 		Sleep(15);
 		*duration = (std::clock() - *start);
 	}
@@ -279,14 +287,28 @@ void InterpolatePartner()
 
 #pragma region "util"
 // serialization
-void Serialize(Packet* msgPacket, char *data)
+string Serialize(Packet* msgPacket)
 {
-	memcpy(msgPacket, &data, sizeof(Packet));
+	json j;
+	j["senderLocation"] = { { "x", msgPacket->senderLocation.x }, { "y", msgPacket->senderLocation.y }, { "z", msgPacket->senderLocation.z } };
+	j["senderRotation"] = msgPacket->senderRotation;
+	return j.dump();
 }
 
-void Deserialize(char *data, Packet* msgPacket)
+Packet* Deserialize(char* data)
 {
-	memcpy(&data, msgPacket, sizeof(Packet));
+	json j = json::parse(data);
+	struct Packet packet;
+	struct Vector3 senderLocation;
+	senderLocation.x = j["senderLocation"]["x"];
+	senderLocation.y = j["senderLocation"]["x"];
+	senderLocation.z = j["senderLocation"]["x"];
+
+	packet.senderLocation = senderLocation;
+	packet.senderRotation = j["senderRotation"];
+
+	Packet* ptr = &packet;
+	return ptr;
 }
 
 #pragma endregion

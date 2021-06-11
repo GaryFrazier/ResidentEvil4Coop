@@ -25,5 +25,6 @@
 #include "spawners.h"
 #include "movers.h"
 #include "test.h"
+#include "json.hpp"
 
 #endif //PCH_H

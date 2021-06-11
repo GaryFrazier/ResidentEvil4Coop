@@ -138,9 +138,7 @@ void Socket::setLocalPort(unsigned short localPort) throw(SocketException) {
   localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   localAddr.sin_port = htons(localPort);
 
-  if (bind(sockDesc, (sockaddr *) &localAddr, sizeof(sockaddr_in)) < 0) {
-    throw SocketException("Set of local port failed (bind())", true);
-  }
+  bind(sockDesc, (sockaddr*)&localAddr, sizeof(sockaddr_in));
 }
 
 void Socket::setLocalAddressAndPort(const string &localAddress,
@@ -149,9 +147,7 @@ void Socket::setLocalAddressAndPort(const string &localAddress,
   sockaddr_in localAddr;
   fillAddr(localAddress, localPort, localAddr);
 
-  if (bind(sockDesc, (sockaddr *) &localAddr, sizeof(sockaddr_in)) < 0) {
-    throw SocketException("Set of local address and port failed (bind())", true);
-  }
+  bind(sockDesc, (sockaddr*)&localAddr, sizeof(sockaddr_in));
 }
 
 void Socket::cleanUp() throw(SocketException) {

@@ -9,6 +9,12 @@ string Serialize(Packet* msgPacket)
 	json j;
 	j["senderLocation"] = { { "x", msgPacket->senderLocation.x }, { "y", msgPacket->senderLocation.y }, { "z", msgPacket->senderLocation.z } };
 	j["senderRotation"] = msgPacket->senderRotation;
+
+	if (msgPacket->senderEnemyData != 0x0)
+	{
+		//j["senderEnemyData"] = 
+	}
+
 	return j.dump();
 }
 
@@ -23,6 +29,8 @@ Packet* Deserialize(char* data)
 
 	packet.senderLocation = senderLocation;
 	packet.senderRotation = j["senderRotation"];
+
+
 
 	Packet* ptr = &packet;
 	return ptr;

@@ -7,6 +7,7 @@ struct Packet
 	Vector3 senderLocation;
 	float senderRotation;
 	short senderAreaId; // used to determine whether or not to sync
+	Enemy* senderEnemyData;
 } packet;
 
 extern bool isServer;

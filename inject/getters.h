@@ -11,3 +11,5 @@ float* GetCurrentRotation();
 float* GetPartnerRotation();
 
 short GetCurrentAreaId();
+
+Enemy* GetEnemies();

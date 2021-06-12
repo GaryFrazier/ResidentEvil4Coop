@@ -33,3 +33,35 @@ void RotatePartner(float newRot)
 		*actorRot = newRot;
 	}
 }
+
+void SetEnemyData(Enemy* baseEnemy)
+{
+    int* baseEnemyPointer = (int*)(modBase + 0x7FDB18);
+
+    if (*baseEnemyPointer == 0x0 || baseEnemy == 0x0)
+    {
+        return;
+    }
+    else
+    {
+        Enemy* currentEnemy = baseEnemy;
+        *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
+        *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
+        *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+
+        int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
+        currentEnemy = currentEnemy->nextEnemy;
+
+        while (nextEnemyPtr != 0x0 && currentEnemy != 0x0)
+        {
+            *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
+            *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
+            *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+
+            nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
+            currentEnemy = currentEnemy->nextEnemy;
+        }
+    }
+
+    return;
+}

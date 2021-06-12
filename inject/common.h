@@ -7,6 +7,14 @@ struct Vector3
 	float z;
 } unaligned;
 
+struct Enemy
+{
+	Vector3 pos;
+	float rot;
+	short health;
+	Enemy* nextEnemy; // linked list
+} enemy;
+
 extern uintptr_t modBase;
 
 void InitializeInjection();

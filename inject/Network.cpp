@@ -121,6 +121,12 @@ void MainSocketLoop(TCPSocket* sock)
 
 	while (true)
 	{
+		if (newPacket != nullptr && previousPacket != nullptr && newPacket->senderAreaId != previousPacket->senderAreaId)
+		{
+			newPacket = nullptr;
+			previousPacket = nullptr;
+		}
+
 		if (duration < .200 && duration != -1)
 		{
 			cout << "\ninterpolate loop 1: ";

@@ -10,6 +10,7 @@ string Serialize(Packet* msgPacket)
 	j["senderLocation"] = { { "x", msgPacket->senderLocation.x }, { "y", msgPacket->senderLocation.y }, { "z", msgPacket->senderLocation.z } };
 	j["senderRotation"] = msgPacket->senderRotation;
 	j["senderAreaId"] = msgPacket->senderAreaId;
+	j["senderHealth"] = msgPacket->senderHealth;
 
 	cout << "serialize 1\n";
 
@@ -64,6 +65,7 @@ Packet* Deserialize(char* data)
 	senderLocation.z = j["senderLocation"]["z"];
 	packet.senderLocation = senderLocation;
 	packet.senderRotation = j["senderRotation"];
+	packet.senderHealth = j["senderHealth"];
 	packet.senderAreaId = j["senderAreaId"];
 
 	struct Enemy baseEnemy;
@@ -126,6 +128,16 @@ void PopulateBase(Packet* packet)
 	else
 	{
 		packet->senderRotation = *rot;
+	}
+
+	short* health = GetCurrentHealth();
+	if (health == 0)
+	{
+		packet->senderHealth = 0;
+	}
+	else
+	{
+		packet->senderHealth = *health;
 	}
 
 	packet->senderAreaId = GetCurrentAreaId();

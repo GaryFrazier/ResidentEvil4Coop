@@ -41,6 +41,21 @@ float* GetCurrentRotation()
     return z;
 }
 
+short* GetCurrentHealth()
+{
+    int* playerPointer = GetPlayerPointer();
+    short* result = (short*)(*(playerPointer)+0x324);
+
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    short zero;
+    short* z = &zero;
+    return z;
+}
+
 Vector3* GetPartnerLocation()
 {
     int* partnerPointer = GetPartnerObjectPointer();
@@ -68,6 +83,22 @@ float* GetPartnerRotation()
     float* zero = 0;
     return zero;
 }
+
+short* GetPartnerHealth()
+{
+    int* partnerPointer = GetPartnerObjectPointer();
+    short* result = (short*)(*(partnerPointer)+0x324);
+
+    if ((int)result > (int)modBase)
+    {
+        return result;
+    }
+
+    short zero;
+    short* z = &zero;
+    return z;
+}
+
 
 short GetCurrentAreaId()
 {

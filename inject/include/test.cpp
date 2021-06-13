@@ -13,9 +13,11 @@ void TestLoop()
 	while (true)
 	{
 
-		if (duration < .200)
+		if (duration < 1)
 		{
-			Interpolate(&start, durationPtr);
+			//Interpolate(&start, durationPtr);
+			Sleep(1000);
+			duration = 1;
 		}
 		else
 		{
@@ -26,8 +28,11 @@ void TestLoop()
 			struct Packet packetData;
 			Vector3* loc = GetCurrentLocation();
 			float* rot = GetCurrentRotation();
+			Enemy* enemyData = GetEnemyData();
 
+			cout << "out of enemy data";
 			packetData.senderLocation = *loc;
+			packetData.senderEnemyData = enemyData;
 
 			if (rot == 0)
 			{
@@ -39,13 +44,12 @@ void TestLoop()
 			}
 
 			string serialized = Serialize(&packetData);
-			cout << serialized << "\n";
+			cout << "\nserialized:\n\n" << serialized << "\n\n\n\n";
 
-			char* p = new char[2048];
+			char* p = new char[8192];
 			strcpy(p, const_cast<char*>(serialized.c_str()));
 			Packet* newPack = Deserialize(p);
-			
-			cout << newPack->senderLocation.x << "\n";
+			cout << "\deserialized PCT:\n\n";
 
 			if (newTestPacket == nullptr)
 			{
@@ -58,8 +62,9 @@ void TestLoop()
 
 			newTestPacket = &packetData;
 
-			MovePartner(&(previousTestPacket->senderLocation));
-			RotatePartner(previousTestPacket->senderRotation);
+			//MovePartner(&(previousTestPacket->senderLocation));
+			//RotatePartner(previousTestPacket->senderRotation);
+			SetEnemyData(previousTestPacket->senderEnemyData);
 
 			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}
@@ -69,7 +74,7 @@ void TestLoop()
 
 void Interpolate(std::clock_t* start, double* duration)
 {
-	while (*duration < 0.200)
+	while (*duration < 1)
 	{
 		if (newTestPacket != nullptr && previousTestPacket != nullptr)
 		{
@@ -84,7 +89,7 @@ void Interpolate(std::clock_t* start, double* duration)
 			RotatePartner(previousTestPacket->senderRotation + (newTestPacket->senderRotation - previousTestPacket->senderRotation));
 		}
 
-		Sleep(15);
+		Sleep(50);
 		*duration = (std::clock() - *start);
 	}
 }

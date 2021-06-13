@@ -12,4 +12,4 @@ float* GetPartnerRotation();
 
 short GetCurrentAreaId();
 
-Enemy* GetEnemies();
+Enemy* GetEnemyData();

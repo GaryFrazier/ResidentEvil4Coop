@@ -45,21 +45,28 @@ void SetEnemyData(Enemy* baseEnemy)
     else
     {
         Enemy* currentEnemy = baseEnemy;
-        *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
-        *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
-        *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+        if (!(*baseEnemyPointer == 0x0 || baseEnemyPointer == 0x0 || *(baseEnemyPointer) == (int)*(GetPlayerPointer()) || *(baseEnemyPointer) == (int)*(GetPartnerObjectPointer())))
+        {
+            *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
+            *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
+            *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+        }
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
         currentEnemy = currentEnemy->nextEnemy;
 
-        while (nextEnemyPtr != 0x0 && currentEnemy != 0x0)
+        while (nextEnemyPtr != 0x0 && (int)currentEnemy < 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy < 0xCCCCCCCC)
         {
-            *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
-            *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
-            *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+            if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
+            {
+                *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
+                *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
+                *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+            }
 
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
             currentEnemy = currentEnemy->nextEnemy;
+            
         }
     }
 

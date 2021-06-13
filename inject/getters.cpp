@@ -22,7 +22,8 @@ Vector3* GetCurrentLocation()
     }
 
     struct Vector3 zero;
-    return &zero;
+    Vector3* z = &zero;
+    return z;
 }
 
 float* GetCurrentRotation()
@@ -35,8 +36,9 @@ float* GetCurrentRotation()
         return result;
     }
 
-    float* zero = 0;
-    return zero;
+    float zero;
+    float* z = &zero;
+    return z;
 }
 
 Vector3* GetPartnerLocation()
@@ -73,7 +75,7 @@ short GetCurrentAreaId()
 }
 
 // Enemies are stored in a linked list, with a pointer to the next enemy at base+0x8
-Enemy* GetEnemies()
+Enemy* GetEnemyData()
 {
     int* baseEnemyPointer = (int*)(modBase + 0x7FDB18);
 
@@ -84,26 +86,61 @@ Enemy* GetEnemies()
     }
     else
     {
-        baseEnemy.pos = *(Vector3*)(*(baseEnemyPointer)+0x94);
-        baseEnemy.rot = *(float*)(*(baseEnemyPointer)+0xA4);
-        baseEnemy.health = *(short*)(*(baseEnemyPointer)+0x324);
+        Vector3* pos = (Vector3*)(*(baseEnemyPointer)+0x94);
+        if ((int)pos > (int)modBase)
+        {
+            baseEnemy.pos = *pos;
+        }
+        
+        float* rot = (float*)(*(baseEnemyPointer)+0xA4);
+        if ((int)rot > (int)modBase)
+        {
+            baseEnemy.rot = *rot;
+        }
+
+        short* health = (short*)(*(baseEnemyPointer)+0x324);
+        if ((int)health > (int)modBase)
+        {
+            baseEnemy.health = *health;
+        }
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
         Enemy* currentEnemy = &baseEnemy;
 
-        while (nextEnemyPtr != 0x0)
+        while (*nextEnemyPtr != 0x0)
         {
             struct Enemy nextEnemy;
-            nextEnemy.pos = *(Vector3*)(*(nextEnemyPtr)+0x94);
-            nextEnemy.rot = *(float*)(*(nextEnemyPtr)+0xA4);
-            nextEnemy.health = *(short*)(*(nextEnemyPtr)+0x324);
+
+            pos = (Vector3*)(*(nextEnemyPtr)+0x94);
+
+            if ((int)pos > (int)modBase)
+            {
+                nextEnemy.pos = *pos;
+            }
+
+            rot = (float*)(*(nextEnemyPtr)+0xA4);
+            if ((int)rot > (int)modBase)
+            {
+                nextEnemy.rot = *rot;
+            }
+
+            health = (short*)(*(nextEnemyPtr)+0x324);
+            if ((int)health > (int)modBase)
+            {
+                nextEnemy.health = *health;
+            }
+            
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
 
-            currentEnemy->nextEnemy = &nextEnemy;
-            currentEnemy = &nextEnemy;
+            currentEnemy->nextEnemy = new Enemy(nextEnemy);
+
+            currentEnemy = currentEnemy->nextEnemy;
         }
+
+        nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
+        Enemy* currentEnemy2 = &baseEnemy;
+
     }
 
-    Enemy* result = &baseEnemy;
-    return result;
+    return new Enemy(baseEnemy);
 }

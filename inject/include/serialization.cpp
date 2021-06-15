@@ -12,12 +12,9 @@ string Serialize(Packet* msgPacket)
 	j["senderAreaId"] = msgPacket->senderAreaId;
 	j["senderHealth"] = msgPacket->senderHealth;
 
-	cout << "serialize 1\n";
-
-	if (msgPacket->senderEnemyData != 0x0)
+	if (msgPacket->senderEnemyData != 0x0 && (int)msgPacket->senderEnemyData > (int)modBase && (int)msgPacket->senderEnemyData < 0xCCCCCCCC)
 	{
 		json firstJsonEnemy;
-
 		firstJsonEnemy["loc"]["x"] = msgPacket->senderEnemyData->pos.x;
 		firstJsonEnemy["loc"]["y"] = msgPacket->senderEnemyData->pos.y;
 		firstJsonEnemy["loc"]["z"] = msgPacket->senderEnemyData->pos.z;
@@ -27,8 +24,7 @@ string Serialize(Packet* msgPacket)
 		j["senderEnemyData"].push_back(firstJsonEnemy);
 
 		Enemy* nextEnemy = msgPacket->senderEnemyData->nextEnemy;
-
-		while (nextEnemy != 0x0 && (int)nextEnemy < 0xCCCCCCCC)
+		while (nextEnemy != 0x0 && (int)nextEnemy > (int)modBase && (int)nextEnemy < 0xCCCCCCCC)
 		{
 			json jsonEnemy;
 
@@ -41,25 +37,23 @@ string Serialize(Packet* msgPacket)
 			nextEnemy = nextEnemy->nextEnemy;
 
 			j["senderEnemyData"].push_back(jsonEnemy);
-		}	
+		}
 	}
 	else
 	{
 		j["senderEnemyData"] = nullptr;
 	}
 
-	cout << "serialize end\n";
 	return j.dump();
 }
 
 Packet* Deserialize(char* data)
 {
-	cout << "\n\n---------deserialize BEGIN------\n";
-
-	
 	json j = json::parse(data);
+
 	struct Packet packet;
 	struct Vector3 senderLocation;
+
 	senderLocation.x = j["senderLocation"]["x"];
 	senderLocation.y = j["senderLocation"]["y"];
 	senderLocation.z = j["senderLocation"]["z"];

@@ -38,8 +38,11 @@ void SetEnemyData(Enemy* baseEnemy)
 {
     int* baseEnemyPointer = (int*)(modBase + 0x7FDB18);
 
-    if (*baseEnemyPointer == 0x0 || baseEnemy == 0x0)
+    std::cout << "enemy " << baseEnemyPointer << " " << *baseEnemyPointer << " " << baseEnemy << "\n";
+
+    if (*baseEnemyPointer == (int)0x0 || *baseEnemyPointer == (int)0x1 || *baseEnemyPointer == (int)0xCCCCCCCC || (int)baseEnemy == (int)0x1 || (int)baseEnemy == (int)0x0 || (int)baseEnemy == (int)0xCCCCCCCC)
     {
+        std::cout << "fail\n";
         return;
     }
     else
@@ -47,11 +50,14 @@ void SetEnemyData(Enemy* baseEnemy)
         Enemy* currentEnemy = baseEnemy;
         if (!(*baseEnemyPointer == 0x0 || baseEnemyPointer == 0x0 || *(baseEnemyPointer) == (int)*(GetPlayerPointer()) || *(baseEnemyPointer) == (int)*(GetPartnerObjectPointer())))
         {
+            std::cout << "mov base enemy\n";
+
             *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
             *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
             *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
         }
 
+        std::cout << "next enemy\n";
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
         currentEnemy = currentEnemy->nextEnemy;
 
@@ -59,10 +65,13 @@ void SetEnemyData(Enemy* baseEnemy)
         {
             if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
             {
+                std::cout << "mov enemy\n";
                 *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
                 *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
                 *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
             }
+
+            std::cout << "next enemy 2\n";
 
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
             currentEnemy = currentEnemy->nextEnemy;

@@ -7,9 +7,8 @@ using namespace std;
 
 bool isServer;
 bool good = true;
-const unsigned int RCVBUFSIZE = 2048;    // Size of receive buffer
+const unsigned int RCVBUFSIZE = 32768;    // Size of receive buffer
 
-char* incomingData = new char[RCVBUFSIZE];
 struct Packet dummyOutgoingPacket;
 Packet* currentOutgoingPacket = &dummyOutgoingPacket;
 
@@ -37,6 +36,7 @@ void InitializeNetwork()
 		cout << "\nYou are the host!\n";
 		cout << "\nWaiting on a client to connect to your hamachi IPv4 address...\n";
 		isServer = true;
+
 		InitializeInjection();
 
 		try
@@ -51,6 +51,7 @@ void InitializeNetwork()
 		catch (SocketException& e)
 		{
 			cerr << e.what() << endl;
+			Sleep(50000);
 			exit(1);
 		}
 
@@ -117,6 +118,7 @@ void MainSocketLoop(TCPSocket* sock)
 {
 	double duration = -1;
 	double* durationPtr = &duration;
+
 	std::clock_t start;
 
 	while (true)
@@ -129,8 +131,6 @@ void MainSocketLoop(TCPSocket* sock)
 
 		if (duration < .200 && duration != -1)
 		{
-			cout << "\ninterpolate loop 1: ";
-			cout << duration << "\n";
 			if (isServer)
 			{
 				InterpolateServer(&start, durationPtr);
@@ -159,7 +159,7 @@ void MainSocketLoop(TCPSocket* sock)
 
 			string outgoingData = Serialize(currentOutgoingPacket);
 			const char* c_outgoingData = outgoingData.c_str();
-
+		
 			// send packet
 			sock->send(c_outgoingData, strlen(c_outgoingData));
 
@@ -170,18 +170,18 @@ void MainSocketLoop(TCPSocket* sock)
 				exit(1);
 			}
 
-			currentIncomingPacket = Deserialize(incomingData);
-			cout << "packet received:\n";
+			currentIncomingPacket = Deserialize(buffer);
+
+			// clear out buffer
+			memset(buffer, 0, sizeof(buffer));
 
 			// process new packet
 			if (newPacket == nullptr)
 			{
-				cout << "new packet null, setting packet:\n";
 				previousPacket = currentIncomingPacket;
 			}
 			else
 			{
-				cout << "setting previous packet:\n";
 				previousPacket = newPacket;
 			}
 
@@ -209,10 +209,9 @@ void MainSocketLoop(TCPSocket* sock)
 
 void ProcessServerPacketOnClient()
 {
-	cout << "moving partner\n";
 	MovePartner(&(previousPacket->senderLocation));
-	cout << "rotating partner\n";
 	RotatePartner(previousPacket->senderRotation);
+	SetEnemyData(previousPacket->senderEnemyData);
 }
 
 void InterpolateClient(std::clock_t* start, double* duration)
@@ -233,11 +232,9 @@ void InterpolateClient(std::clock_t* start, double* duration)
 
 void ProcessClientPacketOnServer()
 {
-	cout << previousPacket->senderRotation;
-	cout << "moving partner\n";
 	MovePartner(&(previousPacket->senderLocation));
-	cout << "rotating partner\n";
 	RotatePartner(previousPacket->senderRotation);
+	
 }
 
 void InterpolateServer(std::clock_t* start, double* duration)
@@ -260,6 +257,7 @@ void InterpolatePartner()
 	interpolatedLocation.x = previousPacket->senderLocation.x + (newPacket->senderLocation.x - previousPacket->senderLocation.x);
 	interpolatedLocation.y = previousPacket->senderLocation.y + (newPacket->senderLocation.y - previousPacket->senderLocation.y);
 	interpolatedLocation.z = previousPacket->senderLocation.z + (newPacket->senderLocation.z - previousPacket->senderLocation.z);
+
 	MovePartner(&(interpolatedLocation));
 	RotatePartner(previousPacket->senderRotation + (newPacket->senderRotation - previousPacket->senderRotation));
 }

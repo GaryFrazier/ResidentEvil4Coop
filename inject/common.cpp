@@ -6,6 +6,8 @@ void InitializeInjection()
 {
 	modBase = (uintptr_t)GetModuleHandle(NULL);
 
+	SetAshleyCostume();
+
 	if (isServer)
 	{
 		HookCollisionDisableServer();
@@ -151,4 +153,10 @@ void HookCollisionDisableServer()
 	partnerCollisionJumpBack2 = hookAddress2 + hookLength;
 
 	Hook((void*)hookAddress2, disableCollisionOnPartner2, hookLength);
+}
+
+void SetAshleyCostume() {
+	byte* ashleyCostume = (byte*)(modBase + 0x85F72B);
+
+	*ashleyCostume = 2;
 }

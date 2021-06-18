@@ -63,6 +63,7 @@ Packet* Deserialize(char* data)
 	packet.senderAreaId = j["senderAreaId"];
 
 	struct Enemy baseEnemy;
+
 	if (j["senderEnemyData"] == nullptr)
 	{
 		packet.senderEnemyData = 0;
@@ -79,10 +80,9 @@ Packet* Deserialize(char* data)
 			}
 			else
 			{
-				struct Enemy newEnemy;
-				Enemy* newEnemyPtr = &newEnemy;
+				Enemy* newEnemyPtr = new Enemy();
 				currentEnemy->nextEnemy = newEnemyPtr;
-				currentEnemy = currentEnemy->nextEnemy;
+				currentEnemy = newEnemyPtr;
 			}
 			
 			struct Vector3 enemyLoc;
@@ -94,7 +94,7 @@ Packet* Deserialize(char* data)
 			currentEnemy->health = element["health"];
 		}
 
-		Enemy* enemyPtr = &baseEnemy;
+		Enemy* enemyPtr = new Enemy(baseEnemy);
 		packet.senderEnemyData = enemyPtr;
 	}
 	return new Packet(packet);

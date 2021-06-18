@@ -142,6 +142,8 @@ void MainSocketLoop(TCPSocket* sock)
 		}
 		else
 		{
+			SetCommonValues();
+
 			start = std::clock();
 
 			// create packet to send
@@ -265,6 +267,10 @@ void InterpolatePartner()
 bool ShouldSync(Packet* packet)
 {
 	return packet->senderAreaId == GetCurrentAreaId();
+}
+
+void SetCommonValues() {
+	SetAshleyCostume();
 }
 
 #pragma endregion

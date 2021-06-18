@@ -26,3 +26,4 @@ void InterpolateClient(std::clock_t* start, double* duration);
 // shared
 void InterpolatePartner();
 bool ShouldSync(Packet* packet);
+void SetCommonValues();

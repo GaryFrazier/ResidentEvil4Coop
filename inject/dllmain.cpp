@@ -13,8 +13,8 @@ DWORD WINAPI MainThread(LPVOID param)
     CreateConsole();
 
     // comment out the first line, and uncomment the second line to test stuff locally without the network
-    InitializeNetwork();
-    //InitializeInjection();TestLoop();
+    //InitializeNetwork();
+    InitializeInjection();TestLoop();
 
     while (!GetAsyncKeyState(VK_END))
     {

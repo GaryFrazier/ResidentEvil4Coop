@@ -51,9 +51,8 @@ short* GetCurrentHealth()
         return result;
     }
 
-    short zero;
-    short* z = &zero;
-    return z;
+    short* zero = 0;
+    return zero;
 }
 
 Vector3* GetPartnerLocation()
@@ -94,9 +93,8 @@ short* GetPartnerHealth()
         return result;
     }
 
-    short zero;
-    short* z = &zero;
-    return z;
+    short* zero = 0;
+    return zero;
 }
 
 

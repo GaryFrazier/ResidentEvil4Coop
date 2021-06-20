@@ -34,6 +34,16 @@ void RotatePartner(float newRot)
 	}
 }
 
+void SetPartnerHealth(short health) {
+    short* healthPtr = GetPartnerHealth();
+
+    if ((int)healthPtr == (int)0x0 || (int)healthPtr == (int)0x1 || (int)healthPtr == (int)0xCCCCCCCC  || *healthPtr == 0 ) {
+        return;
+    }
+
+    *healthPtr = health;
+}
+
 void SetEnemyData(Enemy* baseEnemy)
 {
     int* baseEnemyPointer = (int*)(modBase + 0x7FDB18);
@@ -48,23 +58,32 @@ void SetEnemyData(Enemy* baseEnemy)
         Enemy* currentEnemy = baseEnemy;
         if (!(*baseEnemyPointer == 0x0 || baseEnemyPointer == 0x0 || *(baseEnemyPointer) == (int)*(GetPlayerPointer()) || *(baseEnemyPointer) == (int)*(GetPartnerObjectPointer())))
         {
-            *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
-            *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
-            *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+            if (!isServer) {
+                *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
+                *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
+            }
+            
+            if ((*(baseEnemyPointer)+0x324) > currentEnemy->health) {
+                *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+            }
+           
         }
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
         currentEnemy = currentEnemy->nextEnemy;
 
-        std::cout << "enemy ptr\n" << nextEnemyPtr << " " << currentEnemy << " "  << *nextEnemyPtr;
         while (nextEnemyPtr != 0x0 && (int)currentEnemy < 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy < 0xCCCCCCCC)
         {
-            std::cout << "mov enemy 2\n";
             if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
             {
-                *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
-                *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
-                *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+                if (!isServer) {
+                    *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
+                    *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
+                }
+
+                if ((*(nextEnemyPtr)+0x324) > currentEnemy->health) {
+                    *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+                }   
             }
 
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);

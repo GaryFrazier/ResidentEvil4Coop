@@ -123,14 +123,16 @@ void MainSocketLoop(TCPSocket* sock)
 
 	while (true)
 	{
-		if (newPacket != nullptr && previousPacket != nullptr && newPacket->senderAreaId != previousPacket->senderAreaId)
+		if (newPacket != nullptr && previousPacket != nullptr && (!ShouldSync(previousPacket) || newPacket->senderAreaId != previousPacket->senderAreaId))
 		{
 			newPacket = nullptr;
 			previousPacket = nullptr;
+			cout << "\nchanging area....\n";
 		}
 
 		if (duration < .200 && duration != -1)
 		{
+			cout << "\ninterpolate\n";
 			if (isServer)
 			{
 				InterpolateServer(&start, durationPtr);
@@ -142,14 +144,17 @@ void MainSocketLoop(TCPSocket* sock)
 		}
 		else
 		{
+			cout << "\n set common values \n";
 			SetCommonValues();
 
+			cout << "\n start clock \n";
 			start = std::clock();
 
 			// create packet to send
 			struct Packet currentOutgoingPacketData;
 			currentOutgoingPacket = &currentOutgoingPacketData;
 
+			cout << "\n populate packet \n";
 			if (isServer)
 			{
 				PopulateServerPacket(currentOutgoingPacket);
@@ -159,9 +164,12 @@ void MainSocketLoop(TCPSocket* sock)
 				PopulateClientPacket(currentOutgoingPacket);
 			}
 
+			cout << "\n serialize \n";
+
 			string outgoingData = Serialize(currentOutgoingPacket);
 			const char* c_outgoingData = outgoingData.c_str();
 		
+			cout << "\n sending packet \n";
 			// send packet
 			sock->send(c_outgoingData, strlen(c_outgoingData));
 
@@ -172,6 +180,7 @@ void MainSocketLoop(TCPSocket* sock)
 				exit(1);
 			}
 
+			cout << "\n deserializeing \n";
 			currentIncomingPacket = Deserialize(buffer);
 
 			// clear out buffer
@@ -191,6 +200,7 @@ void MainSocketLoop(TCPSocket* sock)
 
 			if (ShouldSync(previousPacket))
 			{
+				cout << "\n processing... \n";
 				if (isServer)
 				{
 					ProcessClientPacketOnServer();
@@ -201,6 +211,7 @@ void MainSocketLoop(TCPSocket* sock)
 				}
 			}
 
+			cout << "\n adjust clock... \n";
 			// adjust time for next packet send
 			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}
@@ -214,6 +225,7 @@ void ProcessServerPacketOnClient()
 	MovePartner(&(previousPacket->senderLocation));
 	RotatePartner(previousPacket->senderRotation);
 	SetEnemyData(previousPacket->senderEnemyData);
+	SetPartnerHealth(previousPacket->senderHealth);
 }
 
 void InterpolateClient(std::clock_t* start, double* duration)
@@ -236,6 +248,8 @@ void ProcessClientPacketOnServer()
 {
 	MovePartner(&(previousPacket->senderLocation));
 	RotatePartner(previousPacket->senderRotation);
+	SetEnemyData(previousPacket->senderEnemyData);
+	SetPartnerHealth(previousPacket->senderHealth);
 	
 }
 
@@ -256,6 +270,7 @@ void InterpolateServer(std::clock_t* start, double* duration)
 void InterpolatePartner()
 {
 	struct Vector3 interpolatedLocation;
+
 	interpolatedLocation.x = previousPacket->senderLocation.x + (newPacket->senderLocation.x - previousPacket->senderLocation.x);
 	interpolatedLocation.y = previousPacket->senderLocation.y + (newPacket->senderLocation.y - previousPacket->senderLocation.y);
 	interpolatedLocation.z = previousPacket->senderLocation.z + (newPacket->senderLocation.z - previousPacket->senderLocation.z);

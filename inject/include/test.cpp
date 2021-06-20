@@ -64,7 +64,7 @@ void TestLoop()
 
 			//MovePartner(&(previousTestPacket->senderLocation));
 			//RotatePartner(previousTestPacket->senderRotation);
-			SetEnemyData(previousTestPacket->senderEnemyData);
+			//SetEnemyData(previousTestPacket->senderEnemyData);
 
 			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}

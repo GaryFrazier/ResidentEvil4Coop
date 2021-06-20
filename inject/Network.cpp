@@ -281,7 +281,7 @@ void InterpolatePartner()
 
 bool ShouldSync(Packet* packet)
 {
-	return packet->senderAreaId == GetCurrentAreaId();
+	return packet->senderAreaId == GetCurrentAreaId() && GetCurrentAreaId() != 288 && GetCurrentAreaId() != 256;
 }
 
 void SetCommonValues() {

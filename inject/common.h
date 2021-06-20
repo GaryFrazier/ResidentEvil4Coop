@@ -20,4 +20,5 @@ extern uintptr_t modBase;
 void InitializeInjection();
 void HookCollisionDisableClient();
 void HookCollisionDisableServer();
+void HookPartnerSpawnLogic();
 void SetAshleyCostume();

@@ -7,6 +7,7 @@ void InitializeInjection()
 	modBase = (uintptr_t)GetModuleHandle(NULL);
 
 	SetAshleyCostume();
+	HookPartnerSpawnLogic();
 
 	if (isServer)
 	{
@@ -154,6 +155,45 @@ void HookCollisionDisableServer()
 
 	Hook((void*)hookAddress2, disableCollisionOnPartner2, hookLength);
 }
+
+DWORD partnerCheckJmpBack;
+DWORD currentAreaPointer;
+void __declspec(naked) hookPartnerSpawnLogicAsm()
+{
+	__asm {
+		push eax
+		push ebx
+		mov eax, [currentAreaPointer]
+		mov eax, [eax]
+		mov ebx, 0x100
+		cmp ebx, eax
+		pop ebx
+		pop eax
+		je PARTNER_SPAWN_DEF
+		cmp eax, 0
+
+		jmp PARTNER_SPAWN_RET
+		PARTNER_SPAWN_DEF :
+		test dword ptr [eax + 0x00005028], 0x04000000 //BREAKING FOR SOME REASON
+
+		PARTNER_SPAWN_RET:
+		jmp[partnerCheckJmpBack]
+	}
+}
+
+
+// Skips partner logic on all maps except ones specified)
+void HookPartnerSpawnLogic()
+{
+	int hookLength = 10;
+	DWORD hookAddress = modBase + 0x2c5201;
+
+	currentAreaPointer = modBase + 0x85F70C;
+	partnerCheckJmpBack = hookAddress + hookLength;
+
+	Hook((void*)hookAddress, hookPartnerSpawnLogicAsm, hookLength);
+}
+
 
 void SetAshleyCostume() {
 	byte* ashleyCostume = (byte*)(modBase + 0x85F72B);

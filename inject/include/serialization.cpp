@@ -6,18 +6,14 @@ using namespace nlohmann;
 // serialization
 string Serialize(Packet* msgPacket)
 {
-	cout << "\n  serialize 1 \n";
-
 	json j;
 	j["senderLocation"] = { { "x", msgPacket->senderLocation.x }, { "y", msgPacket->senderLocation.y }, { "z", msgPacket->senderLocation.z } };
 	j["senderRotation"] = msgPacket->senderRotation;
 	j["senderAreaId"] = msgPacket->senderAreaId;
 	j["senderHealth"] = msgPacket->senderHealth;
 
-	cout << "\n  serialize 2 \n";
 	if (msgPacket->senderEnemyData != 0x0 && (int)msgPacket->senderEnemyData > (int)modBase && (int)msgPacket->senderEnemyData < 0xCCCCCCCC)
 	{
-		cout << "\n  serialize 3 \n";
 		json firstJsonEnemy;
 		firstJsonEnemy["loc"]["x"] = msgPacket->senderEnemyData->pos.x;
 		firstJsonEnemy["loc"]["y"] = msgPacket->senderEnemyData->pos.y;
@@ -27,12 +23,9 @@ string Serialize(Packet* msgPacket)
 
 		j["senderEnemyData"].push_back(firstJsonEnemy);
 
-		cout << "\n  serialize 4 \n";
-
 		Enemy* nextEnemy = msgPacket->senderEnemyData->nextEnemy;
 		while (nextEnemy != 0x0 && (int)nextEnemy > (int)modBase && (int)nextEnemy != 0xCCCCCCCC && (int)nextEnemy != (int)0x1)
 		{
-			cout << "\n  serialize 5 \n";
 			json jsonEnemy;
 
 			jsonEnemy["loc"]["x"] = nextEnemy->pos.x;
@@ -42,7 +35,6 @@ string Serialize(Packet* msgPacket)
 			jsonEnemy["health"] = nextEnemy->health;
 
 			nextEnemy = nextEnemy->nextEnemy;
-			cout << nextEnemy << "\n";
 			j["senderEnemyData"].push_back(jsonEnemy);
 		}
 	}
@@ -51,7 +43,6 @@ string Serialize(Packet* msgPacket)
 		j["senderEnemyData"] = nullptr;
 	}
 
-	cout << "\n  serialize 6 \n";
 	return j.dump();
 }
 
@@ -62,8 +53,6 @@ Packet* Deserialize(char* data)
 
 	struct Packet packet;
 	struct Vector3 senderLocation;
-
-	cout << "\n 1 \n";
 
 	if (!j["senderLocation"].is_null()) {
 		if (!j["senderLocation"]["x"].is_null()) {
@@ -86,7 +75,6 @@ Packet* Deserialize(char* data)
 
 	struct Enemy baseEnemy;
 
-	cout << "\n 2 \n";
 	if (j["senderEnemyData"] == nullptr)
 	{
 		cout << "\n 3 \n";
@@ -95,7 +83,6 @@ Packet* Deserialize(char* data)
 	}
 	else
 	{
-		cout << "\n 4 \n";
 		Enemy* currentEnemy = nullptr;
 
 		for (const auto& element : j["senderEnemyData"])
@@ -129,22 +116,13 @@ Packet* Deserialize(char* data)
 				}
 			}
 
-			cout << "\n 5 2 \n";
-
 			currentEnemy->pos = enemyLoc;
-
-			cout << "\n 5 3 \n";
 
 			currentEnemy->rot = element["rot"];
 
-			cout << "\n 5 4 \n";
-
 			currentEnemy->health = element["health"];
-
-			cout << "\n 5 5 \n";
 		}
 
-		cout << "\n 6 \n";
 		Enemy* enemyPtr = new Enemy(baseEnemy);
 		packet.senderEnemyData = enemyPtr;
 	}

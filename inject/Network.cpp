@@ -162,7 +162,6 @@ void MainSocketLoop(TCPSocket* sock)
 					PopulateClientPacket(currentOutgoingPacket);
 				}
 
-				cout << "\n serialize \n";
 
 				string outgoingData = Serialize(currentOutgoingPacket);
 				const char* c_outgoingData = outgoingData.c_str();
@@ -181,7 +180,6 @@ void MainSocketLoop(TCPSocket* sock)
 				if (bytesReceived > 0) {
 					bytesReceived = -1;
 					cout << "\n deserializing \n";
-					cout << buffer << "\n";
 
 					currentIncomingPacket = Deserialize(buffer);
 
@@ -214,7 +212,6 @@ void MainSocketLoop(TCPSocket* sock)
 					}
 				}
 
-				cout << "\n adjust clock... \n";
 				// adjust time for next packet send
 				duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 			}

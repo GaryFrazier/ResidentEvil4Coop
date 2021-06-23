@@ -244,7 +244,6 @@ void CommunicatingSocket::connect(const string& foreignAddress,
 void CommunicatingSocket::send(const void* buffer, int bufferLen)
 throw(SocketException)
 {
-    std::cout << "\n send buffer: " << (char*)buffer << "\n" << bufferLen << "\n";
     sendall(sockDesc, (char*)buffer, &bufferLen);
 }
 
@@ -263,16 +262,13 @@ throw(SocketException)
 
         nbytes = ::recv(sockDesc, (raw_type*)newBuf, bufferLen - bytes, 0);
 
-        cout << "nbytes " << nbytes << "\n";
         if (nbytes < 0) {
             return nbytes; // -1 fail
         }
 
         newBuf = (int)buffer + nbytes;
         bytes += nbytes;
-        std::cout << "\n" << (nbytes) << " buff len: " << bufferLen;
     } while (bytes < bufferLen);
-    std::cout << "\n" << "end";
     return nbytes;
 }
 

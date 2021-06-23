@@ -46,8 +46,6 @@ void SetPartnerHealth(short health) {
 
 void SetEnemyData(Enemy* baseEnemy)
 {
-    std::cout << "setting enemy data\n";
-
     int* baseEnemyPointer = (int*)(modBase + 0x7FDB18);
 
     if (*baseEnemyPointer == (int)0x0 || *baseEnemyPointer == (int)0x1 || *baseEnemyPointer == (int)0xCCCCCCCC || (int)baseEnemy == (int)0x1 || (int)baseEnemy == (int)0x0 || (int)baseEnemy == (int)0xCCCCCCCC)
@@ -73,11 +71,9 @@ void SetEnemyData(Enemy* baseEnemy)
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
         currentEnemy = currentEnemy->nextEnemy;
-        std::cout << "base enemy set\n" << nextEnemyPtr << " " << currentEnemy << "\n";
 
         while (nextEnemyPtr != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC)
         {
-            std::cout << "next enemy " << nextEnemyPtr << "\n";
             if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
             {
                 if (!isServer) {

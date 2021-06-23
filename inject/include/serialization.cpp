@@ -30,7 +30,7 @@ string Serialize(Packet* msgPacket)
 		cout << "\n  serialize 4 \n";
 
 		Enemy* nextEnemy = msgPacket->senderEnemyData->nextEnemy;
-		while (nextEnemy != 0x0 && (int)nextEnemy > (int)modBase && (int)nextEnemy < 0xCCCCCCCC)
+		while (nextEnemy != 0x0 && (int)nextEnemy > (int)modBase && (int)nextEnemy != 0xCCCCCCCC && (int)nextEnemy != (int)0x1)
 		{
 			cout << "\n  serialize 5 \n";
 			json jsonEnemy;
@@ -42,7 +42,7 @@ string Serialize(Packet* msgPacket)
 			jsonEnemy["health"] = nextEnemy->health;
 
 			nextEnemy = nextEnemy->nextEnemy;
-
+			cout << nextEnemy << "\n";
 			j["senderEnemyData"].push_back(jsonEnemy);
 		}
 	}
@@ -57,7 +57,6 @@ string Serialize(Packet* msgPacket)
 
 Packet* Deserialize(char* data)
 {
-	cout << "\n\n" << data << "\n";
 
 	json j = json::parse(data);
 

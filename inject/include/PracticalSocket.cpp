@@ -18,7 +18,7 @@
  */
 
 #include "PracticalSocket.h"
-
+#include <iostream>
 #ifdef WIN32
 #include <winsock.h>         // For socket(), connect(), send(), and recv()
 typedef int socklen_t;
@@ -122,6 +122,22 @@ Socket::~Socket()
     sockDesc = -1;
 }
 
+int Socket::sendall(int s, char* buf, int* len)
+{
+    int total = 0;        // how many bytes we've sent
+    int bytesleft = *len; // how many we have left to send
+    int n;
+
+    while (total < *len) {
+        n = send(s, buf + total, bytesleft, 0);
+        if (n == -1) { break; }
+        total += n;
+        bytesleft -= n;
+    }
+
+    return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
+}
+
 string Socket::getLocalAddress() throw(SocketException)
 {
     sockaddr_in addr;
@@ -159,6 +175,7 @@ void Socket::setLocalPort(unsigned short localPort) throw(SocketException)
     {
         throw SocketException("Set of local port failed (bind())", true);
     }
+
 }
 
 void Socket::setLocalAddressAndPort(const string& localAddress,
@@ -172,6 +189,7 @@ void Socket::setLocalAddressAndPort(const string& localAddress,
     {
         throw SocketException("Set of local address and port failed (bind())", true);
     }
+   
 }
 
 void Socket::cleanUp() throw(SocketException)
@@ -218,28 +236,46 @@ void CommunicatingSocket::connect(const string& foreignAddress,
     {
         throw SocketException("Connect failed (connect())", true);
     }
+    DWORD timeout = 200;
+    setsockopt(sockDesc, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+   // u_long iMode = 1; ioctlsocket(sockDesc, FIONBIO, &iMode); FOR NON BLOCK
 }
 
 void CommunicatingSocket::send(const void* buffer, int bufferLen)
 throw(SocketException)
 {
-    if (::send(sockDesc, (raw_type*)buffer, bufferLen, 0) < 0)
-    {
-        throw SocketException("Send failed (send())", true);
-    }
+    std::cout << "\n send buffer: " << (char*)buffer << "\n" << bufferLen << "\n";
+    sendall(sockDesc, (char*)buffer, &bufferLen);
 }
 
 int CommunicatingSocket::recv(void* buffer, int bufferLen)
 throw(SocketException)
 {
-    int rtn;
-    if ((rtn = ::recv(sockDesc, (raw_type*)buffer, bufferLen, 0)) < 0)
-    {
-        throw SocketException("Received failed (recv())", true);
-    }
+    int newBuf = (int)buffer;
 
-    return rtn;
+    int nbytes = 0;
+
+    memset(buffer, 0, sizeof(buffer));
+
+    int bytes = 0;
+
+    do {
+
+        nbytes = ::recv(sockDesc, (raw_type*)newBuf, bufferLen - bytes, 0);
+
+        cout << "nbytes " << nbytes << "\n";
+        if (nbytes < 0) {
+            return nbytes; // -1 fail
+        }
+
+        newBuf = (int)buffer + nbytes;
+        bytes += nbytes;
+        std::cout << "\n" << (nbytes) << " buff len: " << bufferLen;
+    } while (bytes < bufferLen);
+    std::cout << "\n" << "end";
+    return nbytes;
 }
+
 
 string CommunicatingSocket::getForeignAddress()
 throw(SocketException)

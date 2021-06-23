@@ -123,98 +123,109 @@ void MainSocketLoop(TCPSocket* sock)
 
 	while (true)
 	{
-		if (newPacket != nullptr && previousPacket != nullptr && (!ShouldSync(previousPacket) || newPacket->senderAreaId != previousPacket->senderAreaId))
-		{
-			newPacket = nullptr;
-			previousPacket = nullptr;
-			cout << "\nchanging area....\n";
-		}
-
-		if (duration < .200 && duration != -1)
-		{
-			cout << "\ninterpolate\n";
-			if (isServer)
-			{
-				InterpolateServer(&start, durationPtr);
-			}
-			else
-			{
-				InterpolateClient(&start, durationPtr);
-			}
-		}
-		else
-		{
-			cout << "\n set common values \n";
-			SetCommonValues();
-
-			cout << "\n start clock \n";
-			start = std::clock();
-
-			// create packet to send
-			struct Packet currentOutgoingPacketData;
-			currentOutgoingPacket = &currentOutgoingPacketData;
-
-			cout << "\n populate packet \n";
-			if (isServer)
-			{
-				PopulateServerPacket(currentOutgoingPacket);
-			}
-			else
-			{
-				PopulateClientPacket(currentOutgoingPacket);
-			}
-
-			cout << "\n serialize \n";
-
-			string outgoingData = Serialize(currentOutgoingPacket);
-			const char* c_outgoingData = outgoingData.c_str();
 		
-			cout << "\n sending packet \n";
-			// send packet
-			sock->send(c_outgoingData, strlen(c_outgoingData));
+		try {
 
-			// Receive up to the buffer size bytes from the sender
-			if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
+			if (duration < .200 && duration != -1)
 			{
-				cerr << "Unable to read";
-				exit(1);
-			}
-
-			cout << "\n deserializeing \n";
-			currentIncomingPacket = Deserialize(buffer);
-
-			// clear out buffer
-			memset(buffer, 0, sizeof(buffer));
-
-			// process new packet
-			if (newPacket == nullptr)
-			{
-				previousPacket = currentIncomingPacket;
-			}
-			else
-			{
-				previousPacket = newPacket;
-			}
-
-			newPacket = currentIncomingPacket;
-
-			if (ShouldSync(previousPacket))
-			{
-				cout << "\n processing... \n";
 				if (isServer)
 				{
-					ProcessClientPacketOnServer();
+					InterpolateServer(&start, durationPtr);
 				}
 				else
 				{
-					ProcessServerPacketOnClient();
+					InterpolateClient(&start, durationPtr);
 				}
 			}
+			else
+			{
+				if (newPacket != nullptr && previousPacket != nullptr && (!ShouldSync(previousPacket) || newPacket->senderAreaId != previousPacket->senderAreaId))
+				{
+					newPacket = nullptr;
+					previousPacket = nullptr;
+				}
+				
+				SetCommonValues();
 
-			cout << "\n adjust clock... \n";
-			// adjust time for next packet send
-			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+				start = std::clock();
+
+				// create packet to send
+				struct Packet currentOutgoingPacketData;
+				currentOutgoingPacket = &currentOutgoingPacketData;
+
+				if (isServer)
+				{
+					PopulateServerPacket(currentOutgoingPacket);
+				}
+				else
+				{
+					PopulateClientPacket(currentOutgoingPacket);
+				}
+
+				cout << "\n serialize \n";
+
+				string outgoingData = Serialize(currentOutgoingPacket);
+				const char* c_outgoingData = outgoingData.c_str();
+
+				cout << "\n sending packet \n";
+				// send packet
+				sock->send(c_outgoingData, RCVBUFSIZE);
+				cout << "\n sent packet \n";
+				// Receive up to the buffer size bytes from the sender
+				if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
+				{
+					//cerr << "Unable to read";
+					//exit(1);
+				}
+
+				if (bytesReceived > 0) {
+					bytesReceived = -1;
+					cout << "\n deserializing \n";
+					cout << buffer << "\n";
+
+					currentIncomingPacket = Deserialize(buffer);
+
+					// clear out buffer
+					memset(buffer, 0, sizeof(buffer));
+
+					// process new packet
+					if (newPacket == nullptr)
+					{
+						previousPacket = currentIncomingPacket;
+					}
+					else
+					{
+						previousPacket = newPacket;
+					}
+
+					newPacket = currentIncomingPacket;
+
+					if (ShouldSync(previousPacket))
+					{
+						cout << "\n processing... \n";
+						if (isServer)
+						{
+							ProcessClientPacketOnServer();
+						}
+						else
+						{
+							ProcessServerPacketOnClient();
+						}
+					}
+				}
+
+				cout << "\n adjust clock... \n";
+				// adjust time for next packet send
+				duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+			}
+
 		}
+		catch (...) {
+			cout << "\n ERROR\n";
+			previousPacket = nullptr;
+			newPacket = nullptr;
+		}
+		
 	}
 }
 
@@ -222,19 +233,37 @@ void MainSocketLoop(TCPSocket* sock)
 
 void ProcessServerPacketOnClient()
 {
-	MovePartner(&(previousPacket->senderLocation));
-	RotatePartner(previousPacket->senderRotation);
-	SetEnemyData(previousPacket->senderEnemyData);
-	SetPartnerHealth(previousPacket->senderHealth);
+	__try {
+		MovePartner(&(previousPacket->senderLocation));
+		RotatePartner(previousPacket->senderRotation);
+		SetEnemyData(previousPacket->senderEnemyData);
+		SetPartnerHealth(previousPacket->senderHealth);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		cout << "\n Windows error \n";
+		previousPacket = nullptr;
+		newPacket = nullptr;
+	}
 }
 
 void InterpolateClient(std::clock_t* start, double* duration)
 {
+	
 	while (*duration < 0.200)
 	{
-		if (newPacket != nullptr && previousPacket != nullptr)
+		if (newPacket != nullptr && previousPacket != nullptr && ShouldSync(newPacket))
 		{
-			InterpolatePartner();
+			__try {
+
+				InterpolatePartner();
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				cout << "\n Windows error \n";
+				previousPacket = nullptr;
+				newPacket = nullptr;
+			}
 		}
 
 		Sleep(15);
@@ -246,10 +275,18 @@ void InterpolateClient(std::clock_t* start, double* duration)
 
 void ProcessClientPacketOnServer()
 {
-	MovePartner(&(previousPacket->senderLocation));
-	RotatePartner(previousPacket->senderRotation);
-	SetEnemyData(previousPacket->senderEnemyData);
-	SetPartnerHealth(previousPacket->senderHealth);
+	__try {
+		MovePartner(&(previousPacket->senderLocation));
+		RotatePartner(previousPacket->senderRotation);
+		SetEnemyData(previousPacket->senderEnemyData);
+		SetPartnerHealth(previousPacket->senderHealth);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		cout << "\n Windows error \n";
+		previousPacket = nullptr;
+		newPacket = nullptr;
+	}
 	
 }
 
@@ -259,7 +296,15 @@ void InterpolateServer(std::clock_t* start, double* duration)
 	{
 		if (newPacket != nullptr && previousPacket != nullptr && ShouldSync(newPacket))
 		{
-			InterpolatePartner();
+			__try {
+				InterpolatePartner();
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				cout << "\n Windows error \n";
+				previousPacket = nullptr;
+				newPacket = nullptr;
+			}
 		}
 		Sleep(15);
 		*duration = (std::clock() - *start);

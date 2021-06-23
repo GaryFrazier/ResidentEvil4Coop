@@ -64,6 +64,7 @@ public:
    */
   ~Socket();
 
+  int sendall(int s, char* buf, int* len);
   /**
    *   Get the local address
    *   @return local address of socket
@@ -166,6 +167,8 @@ public:
    */
   int recv(void *buffer, int bufferLen) throw(SocketException);
 
+
+
   /**
    *   Get the foreign address.  Call connect() before calling recv()
    *   @return foreign address
@@ -206,6 +209,7 @@ public:
   TCPSocket(const string &foreignAddress, unsigned short foreignPort) 
       throw(SocketException);
 
+
 private:
   // Access for TCPServerSocket::accept() connection creation
   friend class TCPServerSocket;
@@ -217,6 +221,7 @@ private:
  */
 class TCPServerSocket : public Socket {
 public:
+
   /**
    *   Construct a TCP socket for use with a server, accepting connections
    *   on the specified port on any interface

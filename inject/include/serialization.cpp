@@ -77,8 +77,6 @@ Packet* Deserialize(char* data)
 
 	if (j["senderEnemyData"] == nullptr)
 	{
-		cout << "\n 3 \n";
-
 		packet.senderEnemyData = 0;
 	}
 	else
@@ -97,8 +95,6 @@ Packet* Deserialize(char* data)
 				currentEnemy->nextEnemy = newEnemyPtr;
 				currentEnemy = newEnemyPtr;
 			}
-
-			cout << "\n 5 " << currentEnemy << "\n";
 
 			struct Vector3 enemyLoc;
 
@@ -127,7 +123,6 @@ Packet* Deserialize(char* data)
 		packet.senderEnemyData = enemyPtr;
 	}
 
-	cout << "\n 7 \n";
 	return new Packet(packet);
 }
 
@@ -157,11 +152,7 @@ void PopulateBase(Packet* packet)
 	}
 
 	short* health = GetCurrentHealth();
-	if (health == 0)
-	{
-		packet->senderHealth = 0;
-	}
-	else
+	if (health != 0)
 	{
 		packet->senderHealth = *health;
 	}

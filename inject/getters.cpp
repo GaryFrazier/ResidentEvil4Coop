@@ -43,8 +43,7 @@ float* GetCurrentRotation()
 
 short* GetCurrentHealth()
 {
-    int* playerPointer = GetPlayerPointer();
-    short* result = (short*)(*(playerPointer)+0x324);
+    short* result = (short*)(modBase + 0x85F714);
 
     if ((int)result > (int)modBase)
     {
@@ -85,8 +84,8 @@ float* GetPartnerRotation()
 
 short* GetPartnerHealth()
 {
-    int* partnerPointer = GetPartnerObjectPointer();
-    short* result = (short*)(*(partnerPointer)+0x324);
+    
+    short* result = (short*)(modBase + 0x85F718);
 
     if ((int)result > (int)modBase)
     {
@@ -167,7 +166,6 @@ Enemy* GetEnemyData()
         }
 
         nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
-        Enemy* currentEnemy2 = &baseEnemy;
 
     }
 

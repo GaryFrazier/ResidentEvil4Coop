@@ -36,7 +36,7 @@ void RotatePartner(float newRot)
 
 void SetPartnerHealth(short health) {
     short* healthPtr = GetPartnerHealth();
-
+    
     if ((int)healthPtr == (int)0x0 || (int)healthPtr == (int)0x1 || (int)healthPtr == (int)0xCCCCCCCC  || *healthPtr == 0 ) {
         return;
     }
@@ -62,9 +62,9 @@ void SetEnemyData(Enemy* baseEnemy)
                 *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
                 *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
             }
-            
-            if (((short)(*(short*)(baseEnemyPointer)+0x324)) > currentEnemy->health) {
-                *(short*)(*(baseEnemyPointer)+0x324) = currentEnemy->health;
+
+            if ((*(short*)((*(baseEnemyPointer)) + 0x324)) > currentEnemy->health) {
+                (*(short*)((*(baseEnemyPointer)) + 0x324)) = currentEnemy->health;
             }
            
         }
@@ -81,8 +81,8 @@ void SetEnemyData(Enemy* baseEnemy)
                     *(float*)(*(nextEnemyPtr)+0xA4) = currentEnemy->rot;
                 }
 
-                if (((short)(*(short*)(nextEnemyPtr)+0x324)) > currentEnemy->health) {
-                    *(short*)(*(nextEnemyPtr)+0x324) = currentEnemy->health;
+                if ((*(short*)((*(nextEnemyPtr)) + 0x324)) > currentEnemy->health) {
+                    (*(short*)((*(nextEnemyPtr)) + 0x324)) = currentEnemy->health;
                 }   
             }
 

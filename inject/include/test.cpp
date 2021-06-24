@@ -44,12 +44,10 @@ void TestLoop()
 			}
 
 			string serialized = Serialize(&packetData);
-			cout << "\nserialized:\n\n" << serialized << "\n\n\n\n";
 
 			char* p = new char[8192];
 			strcpy(p, const_cast<char*>(serialized.c_str()));
 			Packet* newPack = Deserialize(p);
-			cout << "\deserialized PCT:\n\n";
 
 			if (newTestPacket == nullptr)
 			{
@@ -64,7 +62,7 @@ void TestLoop()
 
 			//MovePartner(&(previousTestPacket->senderLocation));
 			//RotatePartner(previousTestPacket->senderRotation);
-			//SetEnemyData(previousTestPacket->senderEnemyData);
+			SetEnemyData(previousTestPacket->senderEnemyData);
 
 			duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
 		}

@@ -9,6 +9,7 @@ struct Vector3
 
 struct Enemy
 {
+	short id;
 	Vector3 pos;
 	float rot;
 	short health;

@@ -58,23 +58,32 @@ void SetEnemyData(Enemy* baseEnemy)
         Enemy* currentEnemy = baseEnemy;
         if (!(*baseEnemyPointer == 0x0 || baseEnemyPointer == 0x0 || *(baseEnemyPointer) == (int)*(GetPlayerPointer()) || *(baseEnemyPointer) == (int)*(GetPartnerObjectPointer())))
         {
-            if (!isServer) {
-                *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
-                *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
+            while ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy->id != *(short*)(*(baseEnemyPointer))) {
+                currentEnemy = currentEnemy->nextEnemy;
             }
 
-            if ((*(short*)((*(baseEnemyPointer)) + 0x324)) > currentEnemy->health) {
-                (*(short*)((*(baseEnemyPointer)) + 0x324)) = currentEnemy->health;
+            if ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC) {
+                if (!isServer) {
+                    *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
+                    *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
+                }
+
+                if ((*(short*)((*(baseEnemyPointer)) + 0x324)) > currentEnemy->health) {
+                    (*(short*)((*(baseEnemyPointer)) + 0x324)) = currentEnemy->health;
+                }
             }
-           
         }
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
-        currentEnemy = currentEnemy->nextEnemy;
-
-        while (nextEnemyPtr != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC)
+  
+        while (nextEnemyPtr != 0x0 && *nextEnemyPtr != 0x0)
         {
-            if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
+            currentEnemy = baseEnemy;
+            while ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy->id != (*(short*)(*(nextEnemyPtr)))) {
+                currentEnemy = currentEnemy->nextEnemy;
+            }
+
+            if (!((int)currentEnemy == 0xCCCCCCCC || currentEnemy == 0x0 || (int)currentEnemy == 0xCCCCCCCC || *nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
             {
                 if (!isServer) {
                     *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
@@ -87,7 +96,6 @@ void SetEnemyData(Enemy* baseEnemy)
             }
 
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
-            currentEnemy = currentEnemy->nextEnemy;
             
         }
     }

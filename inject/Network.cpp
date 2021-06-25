@@ -153,6 +153,7 @@ void MainSocketLoop(TCPSocket* sock)
 				struct Packet currentOutgoingPacketData;
 				currentOutgoingPacket = &currentOutgoingPacketData;
 
+				cout << "populate packet\n";
 				if (isServer)
 				{
 					PopulateServerPacket(currentOutgoingPacket);
@@ -162,14 +163,12 @@ void MainSocketLoop(TCPSocket* sock)
 					PopulateClientPacket(currentOutgoingPacket);
 				}
 
-
+				cout << "serialize packet\n";
 				string outgoingData = Serialize(currentOutgoingPacket);
 				const char* c_outgoingData = outgoingData.c_str();
 
-				cout << "\n sending packet \n";
 				// send packet
 				sock->send(c_outgoingData, RCVBUFSIZE);
-				cout << "\n sent packet \n";
 				// Receive up to the buffer size bytes from the sender
 				if ((bytesReceived = (sock->recv(buffer, RCVBUFSIZE))) <= 0)
 				{
@@ -179,8 +178,7 @@ void MainSocketLoop(TCPSocket* sock)
 
 				if (bytesReceived > 0) {
 					bytesReceived = -1;
-					cout << "\n deserializing \n";
-
+					cout << "deserialize packet\n";
 					currentIncomingPacket = Deserialize(buffer);
 
 					// clear out buffer
@@ -197,10 +195,9 @@ void MainSocketLoop(TCPSocket* sock)
 					}
 
 					newPacket = currentIncomingPacket;
-
+					cout << "process packet\n";
 					if (ShouldSync(previousPacket))
 					{
-						cout << "\n processing... \n";
 						if (isServer)
 						{
 							ProcessClientPacketOnServer();

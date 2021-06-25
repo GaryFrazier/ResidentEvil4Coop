@@ -43,11 +43,15 @@ void TestLoop()
 				packetData.senderRotation = *rot;
 			}
 
+			Sleep(1000);
 			string serialized = Serialize(&packetData);
+			cout << "out of serialize\n";
 
 			char* p = new char[8192];
 			strcpy(p, const_cast<char*>(serialized.c_str()));
 			Packet* newPack = Deserialize(p);
+			cout << "out of deserialize\n";
+			Sleep(1000);
 
 			if (newTestPacket == nullptr)
 			{

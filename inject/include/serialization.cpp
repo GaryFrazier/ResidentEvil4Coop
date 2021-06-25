@@ -20,6 +20,7 @@ string Serialize(Packet* msgPacket)
 		firstJsonEnemy["loc"]["z"] = msgPacket->senderEnemyData->pos.z;
 		firstJsonEnemy["rot"] = msgPacket->senderEnemyData->rot;
 		firstJsonEnemy["health"] = msgPacket->senderEnemyData->health;
+		firstJsonEnemy["id"] = msgPacket->senderEnemyData->id;
 
 		j["senderEnemyData"].push_back(firstJsonEnemy);
 
@@ -33,6 +34,7 @@ string Serialize(Packet* msgPacket)
 			jsonEnemy["loc"]["z"] = nextEnemy->pos.z;
 			jsonEnemy["rot"] = nextEnemy->rot;
 			jsonEnemy["health"] = nextEnemy->health;
+			jsonEnemy["id"] = nextEnemy->id;
 
 			nextEnemy = nextEnemy->nextEnemy;
 			j["senderEnemyData"].push_back(jsonEnemy);
@@ -117,6 +119,9 @@ Packet* Deserialize(char* data)
 			currentEnemy->rot = element["rot"];
 
 			currentEnemy->health = element["health"];
+
+			currentEnemy->id = element["id"];
+			cout << currentEnemy->id << "\n";
 		}
 
 		Enemy* enemyPtr = new Enemy(baseEnemy);
@@ -129,13 +134,12 @@ Packet* Deserialize(char* data)
 void PopulateServerPacket(Packet* packet)
 {
 	PopulateBase(packet);
-	packet->senderEnemyData = GetEnemyData();
 }
 
 void PopulateClientPacket(Packet* packet)
 {
 	PopulateBase(packet);
-	packet->senderEnemyData = GetEnemyData();
+	
 }
 
 void PopulateBase(Packet* packet)
@@ -158,4 +162,5 @@ void PopulateBase(Packet* packet)
 	}
 
 	packet->senderAreaId = GetCurrentAreaId();
+	packet->senderEnemyData = GetEnemyData();
 }

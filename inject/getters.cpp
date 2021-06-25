@@ -114,6 +114,8 @@ Enemy* GetEnemyData()
     }
     else
     {
+        baseEnemy.id = *(short*)(*(baseEnemyPointer)+0x18);
+
         Vector3* pos = (Vector3*)(*(baseEnemyPointer)+0x94);
         if ((int)pos > (int)modBase)
         {
@@ -138,6 +140,8 @@ Enemy* GetEnemyData()
         while (*nextEnemyPtr != 0x0)
         {
             struct Enemy nextEnemy;
+
+            nextEnemy.id = *(short*)(*(nextEnemyPtr) + 0x18);
 
             pos = (Vector3*)(*(nextEnemyPtr)+0x94);
 

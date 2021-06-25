@@ -6,38 +6,38 @@ _MovePartner MovePartnerFunc;
 
 void MovePartner(Vector3* destination)
 {
-	MovePartnerFunc = (_MovePartner)(modBase + 0x576510);
+    MovePartnerFunc = (_MovePartner)(modBase + 0x576510);
 
-	struct Vector3 zero;
-	zero.x = 0;
-	zero.y = 0;
-	zero.z = 0;
-	Vector3* zeroPointer = &zero;
+    struct Vector3 zero;
+    zero.x = 0;
+    zero.y = 0;
+    zero.z = 0;
+    Vector3* zeroPointer = &zero;
 
-	Vector3* actorLocation = GetPartnerLocation();
-	
-	//check ALL pointers to make sure no bad memory is accessed
-	if ((int)actorLocation > (int)modBase && (int)destination > (int)modBase)
-	{
-		MovePartnerFunc(zeroPointer, destination, actorLocation);
-	}
+    Vector3* actorLocation = GetPartnerLocation();
+
+    //check ALL pointers to make sure no bad memory is accessed
+    if ((int)actorLocation > (int)modBase && (int)destination > (int)modBase)
+    {
+        MovePartnerFunc(zeroPointer, destination, actorLocation);
+    }
 }
 
 void RotatePartner(float newRot)
 {
-	float* actorRot = GetPartnerRotation();
+    float* actorRot = GetPartnerRotation();
 
-	//check ALL pointers to make sure no bad memory is accessed
-	if ((int)actorRot > (int)modBase)
-	{
-		*actorRot = newRot;
-	}
+    //check ALL pointers to make sure no bad memory is accessed
+    if ((int)actorRot > (int)modBase)
+    {
+        *actorRot = newRot;
+    }
 }
 
 void SetPartnerHealth(short health) {
     short* healthPtr = GetPartnerHealth();
-    
-    if ((int)healthPtr == (int)0x0 || (int)healthPtr == (int)0x1 || (int)healthPtr == (int)0xCCCCCCCC  || *healthPtr == 0 ) {
+
+    if ((int)healthPtr == (int)0x0 || (int)healthPtr == (int)0x1 || (int)healthPtr == (int)0xCCCCCCCC || *healthPtr == 0) {
         return;
     }
 
@@ -58,32 +58,23 @@ void SetEnemyData(Enemy* baseEnemy)
         Enemy* currentEnemy = baseEnemy;
         if (!(*baseEnemyPointer == 0x0 || baseEnemyPointer == 0x0 || *(baseEnemyPointer) == (int)*(GetPlayerPointer()) || *(baseEnemyPointer) == (int)*(GetPartnerObjectPointer())))
         {
-            while ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy->id != *(short*)(*(baseEnemyPointer))) {
-                currentEnemy = currentEnemy->nextEnemy;
+            if (!isServer) {
+                *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
+                *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
             }
 
-            if ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC) {
-                if (!isServer) {
-                    *(Vector3*)(*(baseEnemyPointer)+0x94) = currentEnemy->pos;
-                    *(float*)(*(baseEnemyPointer)+0xA4) = currentEnemy->rot;
-                }
-
-                if ((*(short*)((*(baseEnemyPointer)) + 0x324)) > currentEnemy->health) {
-                    (*(short*)((*(baseEnemyPointer)) + 0x324)) = currentEnemy->health;
-                }
+            if ((*(short*)((*(baseEnemyPointer)) + 0x324)) > currentEnemy->health) {
+                (*(short*)((*(baseEnemyPointer)) + 0x324)) = currentEnemy->health;
             }
+
         }
 
         int* nextEnemyPtr = (int*)(*(baseEnemyPointer)+0x8);
-  
-        while (nextEnemyPtr != 0x0 && *nextEnemyPtr != 0x0)
-        {
-            currentEnemy = baseEnemy;
-            while ((int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy->id != (*(short*)(*(nextEnemyPtr)))) {
-                currentEnemy = currentEnemy->nextEnemy;
-            }
+        currentEnemy = currentEnemy->nextEnemy;
 
-            if (!((int)currentEnemy == 0xCCCCCCCC || currentEnemy == 0x0 || (int)currentEnemy == 0xCCCCCCCC || *nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
+        while (nextEnemyPtr != 0x0 && (int)currentEnemy != 0xCCCCCCCC && currentEnemy != 0x0 && (int)currentEnemy != 0xCCCCCCCC)
+        {
+            if (!(*nextEnemyPtr == 0x0 || nextEnemyPtr == 0x0 || *(nextEnemyPtr) == (int)*(GetPlayerPointer()) || *(nextEnemyPtr) == (int)*(GetPartnerObjectPointer())))
             {
                 if (!isServer) {
                     *(Vector3*)(*(nextEnemyPtr)+0x94) = currentEnemy->pos;
@@ -92,11 +83,12 @@ void SetEnemyData(Enemy* baseEnemy)
 
                 if ((*(short*)((*(nextEnemyPtr)) + 0x324)) > currentEnemy->health) {
                     (*(short*)((*(nextEnemyPtr)) + 0x324)) = currentEnemy->health;
-                }   
+                }
             }
 
             nextEnemyPtr = (int*)(*(nextEnemyPtr)+0x8);
-            
+            currentEnemy = currentEnemy->nextEnemy;
+
         }
     }
 
